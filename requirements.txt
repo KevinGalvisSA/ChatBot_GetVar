@@ -1,0 +1,22 @@
+# Frameworks y librerías principales
+fastapi
+uvicorn
+pydantic
+google-generativeai
+google.genai
+
+# LangChain y Langraph (para el chatbot)
+langchain
+langgraph
+
+# Sentence-Transformers (para generar embeddings)
+sentence-transformers
+
+# Qdrant-Client (para interactuar con Qdrant)
+qdrant-client
+
+# Cargar variables de entorno desde .env
+python-dotenv
+
+# Librerías adicionales para manejar documentos PDF
+PyMuPDF

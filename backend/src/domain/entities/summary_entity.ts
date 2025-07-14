@@ -1,10 +1,8 @@
-// backend/src/domain/entities/message.entity.ts
+// backend/src/domain/entities/summary.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
-export type MessageRole = 'user' | 'bot';
-
-@Entity('messages')
-export class Message {
+@Entity('summaries')
+export class Summary {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
@@ -13,9 +11,6 @@ export class Message {
 
     @Column({ type: 'text' })
     content!: string;
-
-    @Column({ type: 'varchar' })
-    role!: MessageRole;
 
     @CreateDateColumn()
     createdAt!: Date;

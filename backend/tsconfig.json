@@ -1,0 +1,49 @@
+{
+    "compilerOptions": {
+        "target": "ES2021", // Modern JS target
+        "module": "commonjs", // Para usar con Node.js
+        "moduleResolution": "node", // Resolución de módulos estilo Node
+        "outDir": "./dist", // Carpeta de salida
+        "rootDir": "./src", // Carpeta raíz de tu código fuente
+        "baseUrl": "./src", // Base para paths
+        "paths": {
+            "@domain/*": [
+                "domain/*"
+            ],
+            "@application/*": [
+                "application/*"
+            ],
+            "@infrastructure/*": [
+                "infrastructure/*"
+            ],
+            "@adapters/*": [
+                "adapters/*"
+            ],
+            "@config/*": [
+                "config/*"
+            ]
+        },
+        "strict": true, // Activa todas las comprobaciones estrictas
+        "esModuleInterop": true, // Permite importar módulos CommonJS
+        "forceConsistentCasingInFileNames": true, // Evita errores por nombres de archivos
+        "skipLibCheck": true, // Acelera compilación (puedes quitarlo si prefieres precisión)
+        "resolveJsonModule": true, // Permite importar archivos .json
+        "emitDecoratorMetadata": true, // Necesario para TypeORM y class-validator
+        "experimentalDecorators": true, // Habilita decoradores
+        "typeRoots": [
+            "./node_modules/@types"
+        ], // Ruta donde buscar los tipos
+        "lib": [
+            "ES2021",
+            "DOM"
+        ], // Soporte para APIs modernas de JS y DOM si usas Google APIs
+        "noImplicitAny": false // Puedes cambiar a true si prefieres mayor seguridad
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

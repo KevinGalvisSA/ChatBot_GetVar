@@ -14,9 +14,6 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise Exception("La clave de API de Gemini no está configurada correctamente. Asegúrate de definirla en el archivo .env")
 
-# Imprimir la clave para depuración
-print(f"GEMINI_API_KEY: {GEMINI_API_KEY}")  # Para verificar si la clave de API se ha cargado correctamente
-
 # Configuración de la API de Gemini
 genai.configure(api_key=GEMINI_API_KEY)  # type: ignore
 

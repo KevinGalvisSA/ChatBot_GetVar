@@ -33,65 +33,52 @@ orchestrator = LangraphOrchestrator(
 
 def chat_with_bot(user_input: str) -> str:
     """
-    Maneja la consulta del usuario, solicita el nombre y teléfono si es necesario,
-    guarda esos datos, y luego genera la respuesta del chatbot con Gemini.
-    
-    Args:
-    - user_input (str): El mensaje o consulta del usuario.
-    
-    Returns:
-    - str: Respuesta generada por el chatbot.
+    Función central del chatbot que maneja la conversación y extrae datos con LangGraph.
+    """
+    # Verificamos si ya tenemos datos del usuario
+    if not BotRegulations.user_input.get("name") or not BotRegulations.user_input.get("phone"):
+        # Ejecutamos LangGraph con el nodo extract_info
+        response = orchestrator.run(user_input)
+
+        # Si LangGraph extrajo info válida, la guardamos
+        extracted = orchestrator.info_extractor.extract(user_input)
+        if extracted.get("name") and extracted.get("phone"):
+            BotRegulations.user_input = {
+                "name": extracted["name"],
+                "phone": extracted["phone"]
+            }
+            return f"✅ ¡Gracias, {extracted['name']}! Ahora dime, ¿en qué puedo ayudarte?"
+
+        # Si no extrajo datos, usamos la respuesta de validación
+        return response
+
+    # Si ya tenemos los datos del usuario, usamos LangGraph completo
+    return orchestrator.run(user_input)
+
+
+def capture_user_data(user_input: str) -> str | None:
+    """
+    Intenta capturar el nombre y teléfono del usuario desde el mensaje.
+    Si se captura correctamente, los guarda. Si no, no devuelve nada.
     """
     try:
-        # Comprobar si el nombre y teléfono ya han sido guardados
-        if not BotRegulations.user_input.get("name") or not BotRegulations.user_input.get("phone"):
-            # Si no están guardados, solicitar al usuario
-            return "¡Hola! Un placer en conocerte, ¿podrías indicarme por favor tu nombre y número de teléfono? Estos datos son importantes para poder ofrecerte mejor asistencia."
-
-        # Si ya se tiene la información, procesar la consulta
-        print(f"🔍 Procesando mensaje: {user_input}")
-
-        # Realizar la búsqueda explícita en Qdrant usando el servicio
-        search_results = qdrant_service.search(user_input)
-        
-        if not search_results:
-            return "Lo siento, no pude encontrar información relevante para tu consulta."
-
-        # Usar el orquestador para procesar la entrada del usuario y combinar la búsqueda
-        context_chunks = [ContextChunk(text=result, score=0.9) for result in search_results]  # type: ignore
-        response = answer_with_gemini(user_input, context_chunks)
-        
-        return response
-    except Exception as e:
-        return f"❌ Ocurrió un error al procesar tu consulta: {str(e)}"
-
-def capture_user_data(user_input: str) -> str:
-    """
-    Función para capturar el nombre y el teléfono del usuario.
-    
-    Args:
-    - user_input (str): El mensaje que contiene el nombre y teléfono.
-    
-    Returns:
-    - str: Respuesta para confirmar la captura de los datos.
-    """
-    # Suponemos que el usuario proporciona el nombre y teléfono de esta manera: "Mi nombre es Juan y mi número de teléfono es 123456789"
-    if "mi nombre es" in user_input.lower() and "mi numero de telefono es" in user_input.lower():
-        try:
-            # Extraemos el nombre y teléfono usando expresiones regulares o dividiendo el texto
+        # Validar formato: "Mi nombre es X y mi numero de telefono es Y"
+        lower_msg = user_input.lower()
+        if "mi nombre es" in lower_msg and "mi numero de telefono es" in lower_msg:
             parts = user_input.split("y mi numero de telefono es")
             name = parts[0].replace("Mi nombre es", "").strip()
             phone = parts[1].strip()
 
-            # Guardar los datos en la variable interna user_input
             BotRegulations.user_input = {
                 "name": name,
                 "phone": phone
             }
 
-            return f"Muchas gracias por la información, {name}! Ahora, cuéntame, ¿en qué puedo ayudarte?"
+            print("✅ Datos capturados:", BotRegulations.user_input)
+            return None  
 
-        except Exception as e:
-            return "Lo siento, no pude entender la información. Por favor, intenta de nuevo con tu nombre y número de teléfono."
+    except Exception as e:
+        print(f"❌ Error capturando datos: {e}")
 
-    return "Para poder ofrecerte una mejor asistencia, ¿podrías indicarme tu nombre y número de teléfono?"
+    return None 
+

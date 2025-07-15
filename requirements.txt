@@ -8,6 +8,7 @@ google.genai
 # LangChain y Langraph (para el chatbot)
 langchain
 langgraph
+langchain-community
 
 # Sentence-Transformers (para generar embeddings)
 sentence-transformers
@@ -20,3 +21,7 @@ python-dotenv
 
 # Librerías adicionales para manejar documentos PDF
 PyMuPDF
+
+# Librería para conectar a la base de datos SQL
+sqlalchemy 
+pymysql

@@ -39,3 +39,4 @@ async def chat_with_bot_endpoint(user_input: UserInput):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al procesar la solicitud: {str(e)}")
+        

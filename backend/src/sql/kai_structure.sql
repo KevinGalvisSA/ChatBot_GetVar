@@ -1,0 +1,63 @@
+-- Tabla que almacena mensajes sin procesar o históricos
+CREATE TABLE `messageStorages` (
+    `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- ID único del mensaje almacenado
+    `sessionId` BIGINT NOT NULL,       -- Identificador de la sesión (referencia al teléfono del cliente)
+    `message` TEXT NOT NULL,           -- Contenido del mensaje
+    `customerId` MEDIUMINT NOT NULL    -- ID del cliente al que pertenece el mensaje
+);
+
+-- Tabla principal de clientes
+CREATE TABLE `customers` (
+    `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- ID único del cliente
+    `name` VARCHAR(100) NOT NULL,     -- Nombre del cliente
+    `phone` BIGINT NOT NULL,          -- Número de teléfono del cliente (usado también como sessionId en messageStorages)
+    `createdBy` MEDIUMINT NULL,       -- ID del usuario que creó este cliente (nullable)
+    `updatedBy` MEDIUMINT NULL,       -- ID del usuario que actualizó este cliente (nullable)
+    `createdAt` TIMESTAMP NOT NULL,   -- Fecha y hora de creación del registro
+    `updatedAt` TIMESTAMP NOT NULL    -- Fecha y hora de la última actualización del registro
+);
+
+-- Tabla que almacena los mensajes dentro de un chat
+CREATE TABLE `messages` (
+    `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- ID único del mensaje
+    `type` TINYINT NOT NULL,          -- Tipo de mensaje (0 = entrante, 1 = saliente, etc.)
+    `content` TEXT NOT NULL,          -- Contenido del mensaje
+    `chatId` MEDIUMINT NOT NULL,      -- ID del chat al que pertenece este mensaje
+    `createdBy` MEDIUMINT NULL,       -- ID del usuario que creó este mensaje (nullable)
+    `updatedBy` MEDIUMINT NULL,       -- ID del usuario que actualizó este mensaje (nullable)
+    `createdAt` TIMESTAMP NOT NULL,   -- Fecha y hora de creación del mensaje
+    `updatedAt` TIMESTAMP NOT NULL    -- Fecha y hora de última modificación del mensaje
+);
+
+-- Tabla que representa una conversación entre el cliente y el sistema
+CREATE TABLE `chats` (
+    `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- ID único del chat
+    `customerId` MEDIUMINT NOT NULL, -- ID del cliente asociado a este chat
+    `lastConnection` DATETIME NOT NULL, -- Última conexión del cliente al chat
+    `createdBy` MEDIUMINT NULL,      -- ID del usuario que creó este chat (nullable)
+    `updatedBy` MEDIUMINT NULL,      -- ID del usuario que actualizó este chat (nullable)
+    `createdAt` TIMESTAMP NOT NULL,  -- Fecha de creación del chat
+    `updatedAt` TIMESTAMP NOT NULL   -- Fecha de última actualización del chat
+);
+
+-- Relaciones (Foreign Keys)
+
+-- Cada mensaje apunta al chat al que pertenece
+ALTER TABLE `messages`
+ADD CONSTRAINT `messages_chatid_foreign`
+FOREIGN KEY (`chatId`) REFERENCES `chats`(`id`);
+
+-- messageStorages.sessionId se relaciona con el teléfono del cliente
+ALTER TABLE `messageStorages`
+ADD CONSTRAINT `messagestorages_sessionid_foreign`
+FOREIGN KEY (`sessionId`) REFERENCES `customers`(`phone`);
+
+-- messageStorages.customerId se relaciona con el ID del cliente
+ALTER TABLE `messageStorages`
+ADD CONSTRAINT `messagestorages_customerid_foreign`
+FOREIGN KEY (`customerId`) REFERENCES `customers`(`id`);
+
+-- chats.customerId se relaciona con el ID del cliente
+ALTER TABLE `chats`
+ADD CONSTRAINT `chats_customerid_foreign`
+FOREIGN KEY (`customerId`) REFERENCES `customers`(`id`);

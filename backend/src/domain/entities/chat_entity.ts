@@ -1,21 +1,19 @@
+// src/domain/entities/chat_entity.ts
+
 import {
-    Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Check
+    Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn
 } from 'typeorm';
 
-@Check(`"type" IN (0, 1)`)
-@Entity('messages')
-export class Message {
+@Entity('chats')
+export class Chat {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ type: 'tinyint' })
-    type!: number; // 0 = user, 1 = bot
-
-    @Column({ type: 'text' })
-    content!: string;
-
     @Column()
-    chatId!: number;
+    customerId!: number;
+
+    @Column({ type: 'datetime', nullable: true })
+    lastConnection!: Date;
 
     @Column({ type: 'int', nullable: true })
     createdBy!: number;

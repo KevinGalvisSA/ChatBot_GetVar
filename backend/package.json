@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test_connection": "ts-node src/config/data-source.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +15,8 @@
     "class-validator": "^0.14.2",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.14.2",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.25",

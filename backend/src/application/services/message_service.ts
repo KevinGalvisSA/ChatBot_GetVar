@@ -1,18 +1,28 @@
-// backend/src/application/services/message.service.ts
+// src/application/services/message_service.ts
+
 import { MessageRepository } from '../../infrastructure/repositories/message_repository';
+import { Message } from '../../domain/entities/message_entity';
 
 export class MessageService {
-    constructor(private readonly repo = new MessageRepository()) { }
+    private repo = new MessageRepository();
 
-    async saveUserMessage(userId: string, content: string) {
-        return this.repo.save(userId, 'user', content);
+    async createMessage(data: Partial<Message>) {
+        return this.repo.create(data);
     }
 
-    async saveBotMessage(userId: string, content: string) {
-        return this.repo.save(userId, 'bot', content);
+    async getMessagesByChat(chatId: number) {
+        return this.repo.findByChatId(chatId);
     }
 
-    async getConversation(userId: string) {
-        return this.repo.getHistory(userId);
+    async getAllMessages() {
+        return this.repo.findAll();
+    }
+
+    async updateMessage(id: number, data: Partial<Message>) {
+        return this.repo.update(id, data);
+    }
+
+    async deleteMessage(id: number) {
+        return this.repo.delete(id);
     }
 }

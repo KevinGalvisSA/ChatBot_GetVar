@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from app.infrastructure.langraph_orchestator import LangraphOrchestrator
 from app.infrastructure.qdrant import QdrantService
 from config import Config 
-from app.application.chatbot import chat_with_bot, capture_user_data
+from app.application.agent.chatbot import chat_with_bot, capture_user_data
 
 router = APIRouter()
 
@@ -51,6 +51,7 @@ async def chat_with_bot_endpoint(user_input: UserInput):
             user_input=user_input.message,
             session_id=user_input.session_id
         )
+        
         return {"response": response}
     except Exception as e:
         raise HTTPException(

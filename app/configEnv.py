@@ -24,3 +24,7 @@ class Config:
         print(f"QDRANT_COLLECTION_NAME: {Config.QDRANT_COLLECTION_NAME}")
         print(f"QDRANT_API_KEY: {Config.QDRANT_API_KEY}")
         print(f"GEMINI_API_KEY: {Config.GEMINI_API_KEY}")
+
+# Ejecutar si este archivo se corre directamente
+if __name__ == "__main__":
+    Config.print_config()

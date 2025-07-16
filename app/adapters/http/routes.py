@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.infrastructure.langraph_orchestator import LangraphOrchestrator
+from app.infrastructure.landgGraph_orchestrator import LangraphOrchestrator
 from app.infrastructure.qdrant import QdrantService
-from config import Config 
+from app.configEnv import Config 
 from app.application.chatbot import chat_with_bot
 from app.application.chatbot import capture_user_data
 

@@ -1,11 +1,10 @@
 from langgraph.graph import StateGraph
 from app.infrastructure.qdrant import QdrantService
 from app.infrastructure.extract_info import InfoExtractor
-from typing import Dict, Optional
+from typing import Optional
 from typing_extensions import TypedDict
 from app.infrastructure.gemini_integration import answer_with_gemini
 from app.models.context_chunk import ContextChunk
-from app.config.bot_regulations import BotRegulations
 
 class State(TypedDict):
     """
@@ -59,7 +58,7 @@ class LangraphOrchestrator:
             return f"❌ Error en el flujo del chatbot: {str(e)}"
 
     def extract_info_node(self, state: State) -> State:
-        print(f"📝 Ejecutando extract_info_node con estado: {state}")
+        # print(f"📝 Ejecutando extract_info_node con estado: {state}")
         extracted_info = self.info_extractor.extract(state["question"])
         validation_message = self.info_extractor.validate_extracted_info(extracted_info)
 
@@ -74,13 +73,13 @@ class LangraphOrchestrator:
         return state
 
     def search_node(self, state: State) -> State:
-        print(f"🌐 Ejecutando search_node con estado: {state}")
+        # print(f"🌐 Ejecutando search_node con estado: {state}")
         search_results = self.qdrant_service.search(state["question"])
         state["search_results"] = search_results
         return state
 
     def response_node(self, state: State) -> State:
-        print(f"📜 Ejecutando response_node con estado: {state}")
+        # print(f"📜 Ejecutando response_node con estado: {state}")
         search_results = state.get("search_results", [])
 
         if not search_results:

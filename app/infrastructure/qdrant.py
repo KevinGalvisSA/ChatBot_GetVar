@@ -1,7 +1,6 @@
 from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer
 from typing import List
-import os
 
 class QdrantService:
     def __init__(self, url: str, collection_name: str, api_key: str):

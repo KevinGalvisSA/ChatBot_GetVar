@@ -1,18 +1,16 @@
-from app.infrastructure.langraph_orchestator import LangraphOrchestrator
+from app.infrastructure.landgGraph_orchestrator import LangraphOrchestrator
 from app.infrastructure.qdrant import QdrantService
-from app.infrastructure.gemini_integration import answer_with_gemini
-from app.models.context_chunk import ContextChunk
 from app.config.bot_regulations import BotRegulations  # Importa BotRegulations
-import os
+from app.configEnv import Config 
 from dotenv import load_dotenv
 
 # Cargar variables de entorno
 load_dotenv()
 
 # Configurar servicios de Qdrant
-qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
-qdrant_collection_name = os.getenv("QDRANT_COLLECTION_NAME", "asesorias")
-qdrant_api_key = os.getenv("QDRANT_API_KEY", "")
+qdrant_url = Config.QDRANT_URL
+qdrant_collection_name = Config.QDRANT_COLLECTION_NAME
+qdrant_api_key = Config.QDRANT_API_KEY
 
 if not qdrant_url or not qdrant_collection_name or not qdrant_api_key:
     raise ValueError("Faltan variables de entorno. Asegúrate de definir QDRANT_URL, QDRANT_COLLECTION_NAME y QDRANT_API_KEY en el archivo .env")

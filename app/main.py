@@ -1,15 +1,22 @@
-from fastapi import FastAPI
-from app.adapters.http.routes import router as chatbot_router  # Importa el router de routes.py
+# app/main.py
 
-# Inicializa FastAPI
-app = FastAPI(title="Chatbot Asesor")
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from app.adapters.http.routes import router as chatbot_router
 
-# Agregar las rutas definidas en routes.py
+app = FastAPI()
+
+# Manejo global de errores 422
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "❌ Entrada inválida. Asegúrate de enviar 'session_id' y 'message'.",
+            "detalles": exc.errors()
+        },
+    )
+
+# Incluir rutas del bot
 app.include_router(chatbot_router)
-
-@app.get("/")
-async def read_root():
-    """
-    Endpoint de prueba para asegurarse de que la API está corriendo correctamente.
-    """
-    return {"message": "Bienvenido al Chatbot Asesor"}

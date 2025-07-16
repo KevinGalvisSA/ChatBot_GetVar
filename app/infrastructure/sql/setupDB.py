@@ -1,99 +1,79 @@
 from time import sleep
 from typing import Callable, List, TypeVar
-from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 from dotenv import load_dotenv
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_community.chat_message_histories import SQLChatMessageHistory
-
 import os
 
+# Carga .env y conexión
 load_dotenv(override=True)
-
 Kai_Agent_DB = os.getenv("DB_HOST")
 
-engine = create_engine(
-        Kai_Agent_DB,
-        pool_recycle=600,
-        pool_pre_ping=True
-)
+engine = create_engine(Kai_Agent_DB, pool_recycle=600, pool_pre_ping=True)
+# print(f"🔍 Conectando con: {Kai_Agent_DB}")
 
+try:
+    with engine.connect() as conn:
+        print("✅ Conectado correctamente a la base de datos.")
+except Exception as e:
+    print(f"❌ No se pudo conectar a la base de datos: {e}")
+
+# Retry mechanism
 T = TypeVar('T')
 
 def execute_try(func: Callable[[], T], max_retries: int = 3) -> T:
-        """
-        Ejecuta una función que reinta en el caso hay un error en la conexión.
+    retries = 0
+    last_error = None
+    while retries < max_retries:
+        try:
+            return func()
+        except OperationalError as e:
+            last_error = e
+            if "MySQL server has gone away" in str(e) and retries < max_retries - 1:
+                retries += 1
+                sleep(1 * retries)
+                print(f"🔄 Reintentando conexión a la base de datos (intento {retries}/{max_retries})")
+                continue
+            raise e
+    raise last_error
 
-        Args:
-                func: Función que desea ejecutar.
-                max_retries: Número máximos de intentos.
-
-        Returns:
-                Resultado de la función si tiene éxito.
-        Raises:
-                OperationalError: Si todos los intentos fallan.
-
-        """
-        retries = 0
-        last_error = None
-
-        while retries < max_retries:
-                try:
-                        return func()
-                except OperationalError as e:
-                        last_error = e 
-                        if  "MySQL server has gone away" in str(e) and retries < max_retries - 1:
-                                retries +=1 
-                                sleep(1 * retries)
-                                print(f"Reitando conexión a la base de datos (intento {retries}/{max_retries})")  
-                                continue
-                raise e
-        raise last_error        
-
+# Clase para guardar mensajes
 class ChatMessageHistory(SQLChatMessageHistory):
-        def __init__(self, session_id, limit=15, connection=engine):
-                super().__init__(session_id=session_id, connection=connection)
-                self.session_id = session_id
-                self.connection = connection
-                self.limit = limit
+    def __init__(self, session_id, limit=15, connection=engine):
+        super().__init__(session_id=session_id, connection=connection)
+        self.session_id = session_id
+        self.connection = connection
+        self.limit = limit
 
-        @property
-        def message(self) -> List[BaseMessage]:
-                """Retrieve all messages from db with retry mechanism""" 
-                def get_messages_db():
-                        with self._make_sync_session() as session:
-                                result = (
-                                        session.query(self.sql_model_class)
-                                        .where (
-                                                getattr(self.sql_model_class.id.desc(), self.session_id_field_name)
-                                                == self.session_id
-                                        )
-                                        .order_by(self.sql_model_class.id.desc()).limit(self.limit)
-                                )
-                                messages = []
-                                for record in result:
-                                        messages.append(self.converter.from_sql_model(record))
-                                        return messages[::-1]
-                
-                        return execute_try(get_messages_db)
-        
-        def get_messages(self) -> List[BaseMessage]:
-                return self.messages
-        def add_messages(self, message: BaseMessage) -> None:
-                """ Appen the message to the record in db with retry mechanism. """
-                def add_message_db():
-                        with self._make_async_session() as session:
-                                session.add(self.converter.to_sql_model(message, self.session_id))
-                                session.commit()
-                        return None
-                execute_try(add_message_db)
+    def get_messages(self) -> List[BaseMessage]:
+        """Recuperar mensajes con reintento"""
+        def get_messages_db():
+            with self._make_sync_session() as session:
+                result = (
+                    session.query(self.sql_model_class)
+                    .where(getattr(self.sql_model_class, self.session_id_field_name) == self.session_id)
+                    .order_by(self.sql_model_class.id.desc())
+                    .limit(self.limit)
+                )
+                messages = [self.converter.from_sql_model(r) for r in result]
+                return messages[::-1]  # orden cronológico
+        return execute_try(get_messages_db)
 
-        def user_message_db(self, message: BaseMessage) -> None:
-         """Add a user message to the store with the retry mechanism."""
-         self.add_messages(message)
-        
-        def ai_message_db(self, message: BaseMessage) -> None:
-                """ Add a AI message to the store with the retry mechanism. """
-                self.add_message(message)
+    def add_messages(self, message: BaseMessage) -> None:
+        """Guarda un mensaje (usuario o IA)"""
+        def add_message_db():
+            with self._make_sync_session() as session:
+                session.add(self.converter.to_sql_model(message, self.session_id))
+                session.commit()
+                print(f"[DB] Guardado mensaje en sesión {self.session_id}: {message.content}")
+        execute_try(add_message_db)
 
+    def add_user_message(self, content: str) -> None:
+        """Guardar mensaje de usuario"""
+        self.add_messages(HumanMessage(content=content))
+
+    def add_ai_message(self, content: str) -> None:
+        """Guardar mensaje de la IA"""
+        self.add_messages(AIMessage(content=content))

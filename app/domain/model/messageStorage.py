@@ -1,14 +1,20 @@
-from sqlalchemy.dialects.mysql import MEDIUMINT
-from sqlalchemy import Column, BigInteger, Text, ForeignKey, String
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+# app/domain/model/messageStorage.py
+from sqlalchemy import Column, String
+from sqlalchemy.dialects.mysql import INTEGER
+from app.domain.model.base import Base
 
 class MessageStorage(Base):
-    __tablename__ = "messageStorage"
+    __tablename__ = 'message_store'
 
-    id = Column(MEDIUMINT(unsigned=True), primary_key=True, autoincrement=True)
-    id_customer = Column(MEDIUMINT(unsigned=True), ForeignKey("customer.id"), nullable=False)
-    session_id = Column(BigInteger, nullable=False)
-    message = Column(Text, nullable=False)
-    type = Column(String(20), nullable=False)  # 👈 Añadir esta columna obligatoriamente
+    id = Column(INTEGER, primary_key=True, autoincrement=True)
+    id_customer = Column(INTEGER, nullable=False)
+    session_id = Column(String(50), nullable=False)
+    message = Column(String(1000), nullable=False)
+    message_type = Column(String(50), nullable=False)
+
+    def __repr__(self):
+        return (
+            f"<MessageStorage(id={self.id}, id_customer={self.id_customer}, "
+            f"session_id='{self.session_id}', message='{self.message}', "
+            f"message_type='{self.message_type}')>"
+        )

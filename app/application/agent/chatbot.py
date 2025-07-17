@@ -73,6 +73,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
         print("⚠️ No se pudieron extraer datos de identificación. Retornando respuesta simple.")
         return response
 
+    # Si ya tenemos los datos del usuario, se usa el historial persistente con Gemini
     print("🧠 Usuario identificado. Recuperando historial...")
     chat_history = ChatMessageHistory(session_id=session_id)
     history = chat_history.get_messages()
@@ -97,30 +98,6 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
     return response
 
-
-
-    # Si ya tenemos los datos del usuario, se usa el historial persistente con Gemini
-    chat_history = ChatMessageHistory(session_id=session_id)
-    history = chat_history.get_messages()
-    print(f"Imprime {history}")
-    messages = [m.content for m in history]
-
-    response = answer_with_gemini(user_input, messages)
-
-    chat_history.add_user_message(user_input)
-    chat_history.add_ai_message(response)
-    print("🧠 Usuario identificado, procediendo a guardar en messageStorage", history)
-
-
-    try:
-        id_customer = 1  # Este ID lo puedes cambiar por uno dinámico si luego quieres usar `BotRegulations`
-        save_message(id_customer=id_customer, session_id=int(session_id), content=user_input)
-        save_message(id_customer=id_customer, session_id=int(session_id), content=response)
-        print(f"Guardado {session_id}")
-    except Exception as e:
-        print(f"❌ Error guardando en messageStorage: {e}")
-
-    return response
 
 
 

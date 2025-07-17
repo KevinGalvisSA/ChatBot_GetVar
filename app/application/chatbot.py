@@ -1,4 +1,4 @@
-from app.infrastructure.landgGraph_orchestrator import LangraphOrchestrator
+from app.infrastructure.langGraph_orchestrator import LangraphOrchestrator
 from app.infrastructure.qdrant import QdrantService
 from app.config.bot_regulations import BotRegulations  # Importa BotRegulations
 from app.configEnv import Config 

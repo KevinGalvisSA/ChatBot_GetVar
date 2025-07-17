@@ -4,9 +4,11 @@ uvicorn
 pydantic
 google-generativeai
 google.genai
+websockets
 
 # LangChain y Langraph (para el chatbot)
 langchain
+langchain_community
 langgraph
 
 # Sentence-Transformers (para generar embeddings)

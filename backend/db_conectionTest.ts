@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Message } from "../domain/entities/message_entity";  // Asegúrate de importar tus entidades aquí
+import { Message } from "./src/domain/entities/message_entity";
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -19,3 +19,12 @@ export const AppDataSource = new DataSource({
     migrations: [],
     subscribers: [],
 });
+
+// Para testear la conexión
+AppDataSource.initialize()
+    .then(() => {
+        console.log("Data Source has been initialized!");
+    })
+    .catch((err) => {
+        console.error("Error during Data Source initialization:", err);
+    });

@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.infrastructure.landgGraph_orchestrator import LangraphOrchestrator
+from app.infrastructure.langGraph_orchestrator import LangraphOrchestrator  # Importa el orquestador de LangGraph
+from app.configEnv import Config
 from app.infrastructure.qdrant import QdrantService
-from app.configEnv import Config 
-from app.application.chatbot import chat_with_bot
 from app.application.chatbot import capture_user_data
 
 router = APIRouter()
@@ -15,7 +14,7 @@ qdrant_service = QdrantService(
     api_key=Config.QDRANT_API_KEY
 )
 
-# Inicializa el orquestador de Langraph
+# Inicializa el orquestador de LangGraph
 orchestrator = LangraphOrchestrator(
     qdrant_url=Config.QDRANT_URL,
     qdrant_collection_name=Config.QDRANT_COLLECTION_NAME,
@@ -29,11 +28,11 @@ class UserInput(BaseModel):
 @router.post("/chat")
 async def chat_with_bot_endpoint(user_input: UserInput):
     try:
-        # Intentar capturar datos
+        # Intentar capturar datos del usuario (por ejemplo, nombre, teléfono, etc.)
         capture_user_data(user_input.message)
 
-        # Generar respuesta usando Gemini
-        response = chat_with_bot(user_input.message)
+        # Generar respuesta usando LangGraph, que procesará con Gemini
+        response = orchestrator.run(user_input.message)  # Llama al orquestador de LangGraph
 
         return {"response": response}
 

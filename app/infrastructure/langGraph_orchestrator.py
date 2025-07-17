@@ -3,7 +3,7 @@ from app.infrastructure.qdrant import QdrantService
 from app.infrastructure.extract_info import InfoExtractor
 from typing import Optional
 from typing_extensions import TypedDict
-from app.infrastructure.gemini_integration import answer_with_gemini
+from app.infrastructure.gemini_integration import answer_with_gemini  # Usamos la función que integra Gemini
 from app.models.context_chunk import ContextChunk
 
 class State(TypedDict):
@@ -29,7 +29,7 @@ class LangraphOrchestrator:
         self.graph_builder = StateGraph(State)
         self.graph_builder.add_node("extract_info_node", self.extract_info_node)
         self.graph_builder.add_node("search_node", self.search_node)
-        self.graph_builder.add_node("response_node", self.response_node)
+        self.graph_builder.add_node("response_node", self.response_node)  # Nodo que usará Gemini
 
         self.graph_builder.add_edge("extract_info_node", "search_node")
         self.graph_builder.add_edge("search_node", "response_node")
@@ -58,7 +58,7 @@ class LangraphOrchestrator:
             return f"❌ Error en el flujo del chatbot: {str(e)}"
 
     def extract_info_node(self, state: State) -> State:
-        # print(f"📝 Ejecutando extract_info_node con estado: {state}")
+        # Procesar la extracción de información
         extracted_info = self.info_extractor.extract(state["question"])
         validation_message = self.info_extractor.validate_extracted_info(extracted_info)
 
@@ -73,20 +73,23 @@ class LangraphOrchestrator:
         return state
 
     def search_node(self, state: State) -> State:
-        # print(f"🌐 Ejecutando search_node con estado: {state}")
+        # Buscar en la base de datos (Qdrant)
         search_results = self.qdrant_service.search(state["question"])
         state["search_results"] = search_results
         return state
 
     def response_node(self, state: State) -> State:
-        # print(f"📜 Ejecutando response_node con estado: {state}")
+        # Procesar la respuesta usando Gemini
         search_results = state.get("search_results", [])
 
         if not search_results:
             state["response"] = "Lo siento, no encontré información relevante para tu consulta."
             return state
 
+        # Convertir los resultados de búsqueda a fragmentos de contexto
         context_chunks = [ContextChunk(text=chunk, score=0.9) for chunk in search_results]
+
+        # Llamar a la función `answer_with_gemini` para obtener la respuesta
         response = answer_with_gemini(
             question=state["question"],
             chunks=context_chunks

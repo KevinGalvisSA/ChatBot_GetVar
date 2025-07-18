@@ -1,10 +1,11 @@
+import datetime
 from time import sleep
 from typing import Callable, List, TypeVar
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 from dotenv import load_dotenv
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-
+from app.domain.model.customer import Customer
 from app.domain.model.messageStorage import MessageStorage  # Tu modelo personalizado
 
 import os
@@ -40,6 +41,41 @@ def execute_try(func: Callable[[], T], max_retries: int = 3) -> T:
                 continue
             raise e
     raise last_error
+
+
+def get_customer_by_phone(phone: int) -> Customer | None:
+    def _get():
+        db = SessionLocal()
+        try:
+            return db.query(Customer).filter(Customer.phone_number == phone).first()
+        finally:
+            db.close()
+    return execute_try(_get)
+
+def create_customer(name: str, phone: int, created_by: int = 1, updated_by: int = 1) -> Customer:
+    def _create():
+        db = SessionLocal()
+        try:
+            now = datetime.utcnow()
+            customer = Customer(
+                name=name,
+                phone_number=phone,
+                createdBy=created_by,
+                updatedBy=updated_by,
+                createdAt=now,
+                updatedAt=now
+            )
+            db.add(customer)
+            db.commit()
+            db.refresh(customer)
+            return customer
+        except Exception as e:
+            db.rollback()
+            print(f"❌ Error creando cliente: {e}")
+            raise
+        finally:
+            db.close()
+    return execute_try(_create)
 
 # ✅ Clase personalizada que usa tu modelo MessageStorage y guarda message_type correctamente
 from sqlalchemy.orm import sessionmaker
@@ -113,3 +149,4 @@ class ChatMessageHistory:
     def add_ai_message(self, content: str) -> None:
         print(f"🤖 Guardando mensaje de la IA: {content}")
         self.add_messages(AIMessage(content=content))
+    

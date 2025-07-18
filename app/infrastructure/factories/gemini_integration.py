@@ -1,62 +1,47 @@
 import os
 import google.generativeai as genai  # type: ignore
+from dotenv import load_dotenv
 from app.models.context_chunk import ContextChunk
-from app.config.bot_regulations import BotRegulations  # Importamos las reglas
-from dotenv import load_dotenv  # Para cargar las variables de entorno
+from app.config.bot_regulations import BotRegulations
 
 # Cargar variables de entorno
 load_dotenv()
-
-# Configuración de la API de Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Verificar si la clave de API está configurada correctamente
-if not GEMINI_API_KEY:
-    raise Exception("La clave de API de Gemini no está configurada correctamente. Asegúrate de definirla en el archivo .env")
+# Configurar Gemini
+genai.configure(api_key=GEMINI_API_KEY)
 
-# Configuración de la API de Gemini
-genai.configure(api_key=GEMINI_API_KEY)  # type: ignore
+# Instancia del modelo Gemini
+model = genai.GenerativeModel("gemini-pro")
 
-def answer_with_gemini(question: str, chunks: list[ContextChunk]) -> str:
-    """
-    Genera una respuesta utilizando Gemini basada en el contexto y la consulta.
-    
-    Args:
-    - question (str): La pregunta o consulta del usuario.
-    - chunks (list): Los fragmentos de contexto extraídos de la base de datos.
-
-    Returns:
-    - str: La respuesta generada por Gemini.
-    """
+def answer_with_gemini(user_input: str, context_chunks: list[ContextChunk]) -> str:
     try:
-        # Crear el contexto a partir de los fragmentos
-        context = "\n".join([chunk.text for chunk in chunks])
+        # Reglas del bot
+        rules = BotRegulations.RULES["intro"]
 
-        # Obtener el reglamento del bot
-        bot_intro = BotRegulations.get_rule("intro")  # Se puede modificar para obtener otras reglas
+        # Construir contexto a partir de los chunks
+        context = "\n".join([f"- {chunk.content}" for chunk in context_chunks])
 
-        # Crear el prompt para enviar a Gemini usando f-string para interpolar las variables
         prompt = f"""
-        {bot_intro}
+{rules}
 
-        ### CONTEXTO:
-        {context}
+## CONTEXTO RELACIONADO
+{context}
 
-        ### PREGUNTA:
-        {question}
+## PREGUNTA DEL USUARIO
+{user_input}
+        """.strip()
 
-        ### RESPONDE CON ENFOQUE EN LA SOLUCIÓN:
-        Mantén la respuesta centrada en proporcionar soluciones claras y prácticas que ayuden al cliente a automatizar o mejorar su proceso, sin desviarte a temas irrelevantes. Usa un lenguaje sencillo y directo. 
-        """
+        # Generar respuesta
+        response = model.generate_content(prompt)
 
-        # Llamar a la API de Gemini para generar la respuesta
-        response = genai.GenerativeModel("models/gemini-1.5-pro").generate_content(prompt)  # type: ignore
-        
-        # Si la respuesta no tiene texto, lanzamos un error
-        if not response or not response.text:
-            raise Exception("Gemini no respondió correctamente.")
-        
-        return response.text
-    
+        # ✅ Manejo seguro del tipo de respuesta
+        if isinstance(response, str):
+            return response
+        elif hasattr(response, "text"):
+            return response.text
+        else:
+            raise Exception(f"Respuesta inesperada de Gemini: {type(response)}")
+
     except Exception as e:
         return f"❌ Error al usar Gemini: {str(e)}"

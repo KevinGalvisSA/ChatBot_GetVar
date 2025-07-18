@@ -4,11 +4,13 @@ import { Server } from 'socket.io';  // Importar correctamente Server de socket.
 import messageRoutes from './adapters/http/routes/message_routes';
 import 'reflect-metadata';
 import { AppDataSource } from './config/data_source';
+import errorManage from './middlewares/errorHandleMiddleware'
 
 const app = express();
 app.use(express.json());
 
 app.use('/api', messageRoutes);
+app.use(errorManage)
 
 // Crear el servidor HTTP para WebSocket
 const server = http.createServer(app);

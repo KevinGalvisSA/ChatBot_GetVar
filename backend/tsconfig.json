@@ -41,7 +41,7 @@
     },
     "include": [
         "src/**/*.ts"
-    ],
+, "src/handleUtils/logger.ts"    ],
     "exclude": [
         "node_modules",
         "dist"

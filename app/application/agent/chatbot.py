@@ -1,6 +1,6 @@
-from app.infrastructure.langraph_orchestator import LangraphOrchestrator
-from app.infrastructure.qdrant import QdrantService
-from app.infrastructure.gemini_integration import answer_with_gemini
+from app.infrastructure.factories.langraph_orchestator import LangraphOrchestrator
+from app.infrastructure.factories.qdrant import QdrantService
+from app.infrastructure.factories.gemini_integration import answer_with_gemini
 from app.infrastructure.sql.setupDB import ChatMessageHistory
 from app.infrastructure.sql.message_saver import save_message  # Asegúrate de importar esto correctamente
 from app.config.bot_regulations import BotRegulations
@@ -90,8 +90,12 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
     try:
         print("📥 Guardando en tabla messageStorage")
         id_customer = 1  # Este ID puede ser dinámico luego
-        save_message(id_customer=id_customer, session_id=int(session_id), content=user_input)
-        save_message(id_customer=id_customer, session_id=int(session_id), content=response)
+        # Guardar mensaje del usuario
+        save_message(id_customer=id_customer, session_id=int(session_id), content=user_input, message_type="human")
+
+# Guardar mensaje del bot
+        save_message(id_customer=id_customer, session_id=int(session_id), content=response, message_type="ai")
+
         print(f"✅ Mensajes guardados exitosamente para session_id={session_id}")
     except Exception as e:
         print(f"❌ Error guardando en messageStorage: {e}")

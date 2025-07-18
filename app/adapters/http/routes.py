@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from app.infrastructure.langraph_orchestator import LangraphOrchestrator
-from app.infrastructure.qdrant import QdrantService
+from app.infrastructure.factories.langraph_orchestator import LangraphOrchestrator
+from app.infrastructure.factories.qdrant import QdrantService
 from config import Config 
 from app.application.agent.chatbot import chat_with_bot, capture_user_data
 

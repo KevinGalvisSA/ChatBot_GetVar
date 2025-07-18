@@ -1,11 +1,11 @@
 from langgraph.graph import StateGraph
-from app.infrastructure.qdrant import QdrantService
-from app.infrastructure.extract_info import InfoExtractor
+from app.infrastructure.factories.qdrant import QdrantService
+from app.infrastructure.factories.extract_info import InfoExtractor
 from typing import Dict, Optional
 from typing_extensions import TypedDict
-from app.infrastructure.gemini_integration import answer_with_gemini
+from app.infrastructure.factories.gemini_integration import answer_with_gemini
 from app.models.context_chunk import ContextChunk
-from app.config.bot_regulations import BotRegulations
+
 
 class State(TypedDict):
     """

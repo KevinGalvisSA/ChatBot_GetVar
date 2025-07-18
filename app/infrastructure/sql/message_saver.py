@@ -23,15 +23,16 @@ def save_message(id_customer: int, session_id: int, content: str, message_type: 
             id_customer=id_customer,
             session_id=str(session_id),
             message=content,
-            message_type=message_type  # ✅ usa el nombre real del campo
+            message_type=message_type
         )
 
         print(f"🧪 DEBUG ➜ Objeto a guardar: {vars(new_message)}")
 
         db.add(new_message)
         db.commit()
+        db.refresh(new_message)  # 🔄 Opcional: actualiza con valores generados como ID
 
-        print(f"✅ Mensaje guardado exitosamente: {content}")
+        print(f"✅ Mensaje guardado exitosamente: {new_message}")
     except Exception as e:
         db.rollback()
         print(f"❌ Error guardando en messageStorage: {e}")

@@ -4,7 +4,7 @@ from sqlalchemy.dialects.mysql import INTEGER
 from app.domain.model.base import Base
 
 class MessageStorage(Base):
-    __tablename__ = 'message_store'
+    __tablename__ = 'messageStorage'
 
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     id_customer = Column(INTEGER, nullable=False)

@@ -5,6 +5,8 @@ pydantic
 google-generativeai
 google.genai
 websockets
+dotenv
+fitz
 
 # LangChain y Langraph (para el chatbot)
 langchain

@@ -58,3 +58,4 @@ class InfoExtractor:
             return f"Para continuar necesito {', y '.join(missing)}. ¿Podrías proporcionármelos por favor?"
 
         return "✅ ¡Gracias por la información! Ahora dime, ¿en qué puedo ayudarte?"
+    

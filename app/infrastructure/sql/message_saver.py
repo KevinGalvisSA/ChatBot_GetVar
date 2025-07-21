@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 from app.domain.model.messageStorage import MessageStorage
-from app.infrastructure.sql.setupDB import engine
+from app.infrastructure.sql.setupDB import ChatMessageHistory, engine
 
 # Crear una sesión local
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -38,3 +38,12 @@ def save_message(id_customer: int, session_id: int, content: str, message_type: 
         print(f"❌ Error guardando en messageStorage: {e}")
     finally:
         db.close()
+
+
+def handle_conversation_flow(session_id: str, id_customer: int, user_input: str, model) -> str:
+    history = ChatMessageHistory(session_id=session_id, id_customer=id_customer)
+    history.add_user_message(user_input)
+    messages = history.get_messages()
+    response = model.generate_response(messages)
+    history.add_ai_message(response)
+    return response

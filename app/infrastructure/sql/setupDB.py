@@ -149,4 +149,19 @@ class ChatMessageHistory:
     def add_ai_message(self, content: str) -> None:
         print(f"🤖 Guardando mensaje de la IA: {content}")
         self.add_messages(AIMessage(content=content))
+
+def get_formatted_history(session_id: str, limit: int = 15) -> str:
+    print(f"[DEBUG] Obteniendo historial para session_id={session_id} con límite={limit}")
     
+    history = ChatMessageHistory(session_id=session_id, limit=limit)
+    messages = history.get_messages()
+    
+    print(f"[DEBUG] Total de mensajes recuperados: {len(messages)}")
+
+    historial = ""
+    for m in messages:
+        rol = "🧑 Usuario" if isinstance(m, HumanMessage) else "🤖 Bot"
+        historial += f"{rol}: {m.content}\n"
+
+    print(f"[DEBUG] Historial formateado:\n{historial}")
+    return historial

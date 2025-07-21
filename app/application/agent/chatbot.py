@@ -1,6 +1,7 @@
-
+from app.infrastructure.factories.langraph_orchestator import LangraphOrchestrator
 from app.infrastructure.factories.qdrant import QdrantService
 from app.infrastructure.factories.gemini_integration import answer_with_gemini
+from app.infrastructure.sql.setupDB import ChatMessageHistory
 from app.infrastructure.sql.message_saver import save_message
 from app.infrastructure.factories.extract_info import InfoExtractor
 from app.config.bot_regulations import BotRegulations
@@ -51,11 +52,27 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
         context_chunks = []
 
     # Obtener respuesta desde Gemini (⚠️ aquí corregimos el keyword argument)
+# Obtener respuesta desde Gemini usando historial de mensajes
     try:
-        response = answer_with_gemini(question=user_input, chunks=context_chunks)
+        # 1️⃣ Recuperar historial desde la base de datos
+        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer)
+        messages = chat_history.get_messages()
+
+    # 2️⃣ Formatear el historial como texto plano
+        formatted_history = "\n".join([
+        f"Usuario: {m.content}" if m.type == "human" else f"Bot: {m.content}"
+        for m in messages
+        ])
+
+    # 3️⃣ Combinar historial + input actual
+        prompt_con_historial = f"{formatted_history}\nUsuario: {user_input}"
+
+    # 4️⃣ Enviar a Gemini como una sola entrada
+        response = answer_with_gemini(question=prompt_con_historial, chunks=context_chunks)
 
     except Exception as e:
         response = f"❌ Error al usar Gemini: {str(e)}"
+
 
     # Guardar mensajes en la base de datos
     try:

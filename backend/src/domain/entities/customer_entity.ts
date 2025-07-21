@@ -1,7 +1,11 @@
-// src/domain/entities/customer_entity.ts
+// backend/src/domain/entities/customer_entity.ts
 
 import {
-    Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn
 } from 'typeorm';
 
 @Entity('customers')
@@ -9,10 +13,10 @@ export class Customer {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ type: 'varchar', length: 255 })
+    @Column({ type: 'varchar', length: 100 })
     name!: string;
 
-    @Column({ type: 'bigint' })
+    @Column({ type: 'bigint', unique: true })
     phone!: number;
 
     @Column({ type: 'int', nullable: true })

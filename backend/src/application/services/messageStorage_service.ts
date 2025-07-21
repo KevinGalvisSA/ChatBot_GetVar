@@ -1,28 +1,44 @@
-// src/application/services/messageStorage_service.ts
+// backend/src/application/services/message_storage_service.ts
 
 import { MessageStorageRepository } from '../../infrastructure/repositories/messageStorage_repository';
 import { MessageStorage } from '../../domain/entities/messageStorage_entity';
 
 export class MessageStorageService {
-  private repo = new MessageStorageRepository();
+  private messageStorageRepository: MessageStorageRepository;
 
-  async createMessageStorage(data: Partial<MessageStorage>) {
-    return this.repo.create(data);
+  constructor() {
+    this.messageStorageRepository = new MessageStorageRepository();
   }
 
-  async getStorageByCustomer(customerId: number) {
-    return this.repo.findByCustomerId(customerId);
+  async createStorageMessage(data: Partial<MessageStorage>): Promise<MessageStorage> {
+    if (!data.customer || !data.customerId) {
+      throw new Error('Customer relation is required.');
+    }
+
+    if (!data.sessionId) {
+      throw new Error('Session ID is required.');
+    }
+
+    if (!data.message || data.message.trim() === '') {
+      throw new Error('Message content cannot be empty.');
+    }
+
+    if (!data.messageType) {
+      throw new Error('Message type is required.');
+    }
+
+    return await this.messageStorageRepository.create(data);
   }
 
-  async getAllStorages() {
-    return this.repo.findAll();
+  async getByCustomerId(customerId: number): Promise<MessageStorage | null> {
+    return await this.messageStorageRepository.findByCustomerId(customerId);
   }
 
-  async updateStorage(id: number, data: Partial<MessageStorage>) {
-    return this.repo.update(id, data);
+  async getBySessionId(sessionId: number): Promise<MessageStorage | null> {
+    return await this.messageStorageRepository.findBySessionId(sessionId);
   }
 
-  async deleteStorage(id: number) {
-    return this.repo.delete(id);
+  async deleteByCustomerId(customerId: number): Promise<boolean> {
+    return await this.messageStorageRepository.deleteByCustomerId(customerId);
   }
 }

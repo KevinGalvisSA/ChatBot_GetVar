@@ -1,41 +1,41 @@
-// src/infrastructure/repositories/messageStorage_repository.ts
+// backend/src/infrastructure/repositories/message_storage_repository.ts
 
 import { AppDataSource } from '../../config/data_source';
+import { Repository } from 'typeorm';
 import { MessageStorage } from '../../domain/entities/messageStorage_entity';
 
 export class MessageStorageRepository {
-    private repo = AppDataSource.getRepository(MessageStorage);
+    private repository: Repository<MessageStorage>;
 
-    // Crear un registro de MessageStorage
-    async create(data: Partial<MessageStorage>) {
-        const storage = this.repo.create(data);
-        return this.repo.save(storage);
+    constructor() {
+        this.repository = AppDataSource.getRepository(MessageStorage);
     }
 
-    // Buscar registros por customerId
-    async findByCustomerId(customerId: number) {
-        return this.repo.find({
+    async create(data: Partial<MessageStorage>): Promise<MessageStorage> {
+        const storage = this.repository.create(data);
+        return await this.repository.save(storage);
+    }
+
+    async findByCustomerId(customerId: number): Promise<MessageStorage | null> {
+        return await this.repository.findOne({
             where: { customerId },
+            relations: ['customer'],
         });
     }
 
-    // Obtener todos los registros
-    async findAll() {
-        return this.repo.find();
+    async findBySessionId(sessionId: number): Promise<MessageStorage | null> {
+        return await this.repository.findOne({
+            where: { sessionId },
+            relations: ['customer'],
+        });
     }
 
-    // Actualizar un registro
-    async update(id: number, data: Partial<MessageStorage>) {
-        await this.repo.update(id, data);
-        return this.repo.findOneBy({ id });
+    async deleteByCustomerId(customerId: number): Promise<boolean> {
+        const result = await this.repository.delete({ customerId });
+        return result.affected !== 0;
     }
 
-    // Eliminar un registro
-    async delete(id: number) {
-        const storage = await this.repo.findOneBy({ id });
-        if (storage) {
-            return this.repo.remove(storage);
-        }
-        return null;
+    async clear(): Promise<void> {
+        await this.repository.clear();
     }
 }

@@ -1,28 +1,36 @@
-// src/application/services/message_service.ts
+// backend/src/application/services/message_service.ts
 
 import { MessageRepository } from '../../infrastructure/repositories/message_repository';
 import { Message } from '../../domain/entities/message_entity';
 
 export class MessageService {
-    private repo = new MessageRepository();
+    private messageRepository: MessageRepository;
 
-    async createMessage(data: Partial<Message>) {
-        return this.repo.create(data);
+    constructor() {
+        this.messageRepository = new MessageRepository();
     }
 
-    async getMessagesByChat(chatId: number) {
-        return this.repo.findByChatId(chatId);
+    async createMessage(data: Partial<Message>): Promise<Message> {
+        if (![0, 1].includes(data.type ?? -1)) {
+            throw new Error('Invalid message type. Must be 0 (user) or 1 (bot).');
+        }
+
+        if (!data.content || data.content.trim() === '') {
+            throw new Error('Message content cannot be empty.');
+        }
+
+        if (!data.chat) {
+            throw new Error('Chat relation is required.');
+        }
+
+        return await this.messageRepository.create(data);
     }
 
-    async getAllMessages() {
-        return this.repo.findAll();
+    async getMessagesByChat(chatId: number): Promise<Message[]> {
+        return await this.messageRepository.getAllByChatId(chatId);
     }
 
-    async updateMessage(id: number, data: Partial<Message>) {
-        return this.repo.update(id, data);
-    }
-
-    async deleteMessage(id: number) {
-        return this.repo.delete(id);
+    async deleteMessage(id: number): Promise<boolean> {
+        return await this.messageRepository.deleteById(id);
     }
 }

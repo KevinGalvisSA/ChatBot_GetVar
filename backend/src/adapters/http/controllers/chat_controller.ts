@@ -1,61 +1,80 @@
 // backend/src/adapters/http/controllers/chat_controller.ts
 
 import { Request, Response } from 'express';
-import { ChatService } from '../../../application/services/chat_service';
 import { ApiResponse } from '../../../handleUtils/apiResponse';
+import { ChatService } from '../../../application/services/chat_service';
 
-const service = new ChatService();
+const chatService = new ChatService();
 
-export const registerChatInfo = async (req: Request, res: Response) => {
-    try {
-        const chat = await service.createChat(req.body);
-        return ApiResponse.created(res, 'Chat creado exitosamente', chat);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al crear el chat');  
-    }
-};
+export class ChatController {
+    static async createIfNotExists(req: Request, res: Response) {
+        try {
+            const { customerId } = req.body;
+            if (!customerId || isNaN(Number(customerId))) {
+                return ApiResponse.badRequest(res, 'customerId inválido o faltante');
+            }
 
-export const getChatInfoByCustomerId = async (req: Request, res: Response) => {
-    try {
-        const chats = await service.getChatsByCustomer(Number(req.params.customerId));
-        if (!chats || chats.length === 0) {
-            return ApiResponse.notFound(res, 'Chats no encontrados para este cliente');  
+            const chat = await chatService.createChatIfNotExists(Number(customerId));
+            return ApiResponse.success(res, 'Chat obtenido o creado correctamente', chat);
+        } catch (error) {
+            return ApiResponse.error(res, error);
         }
-        return ApiResponse.success(res, 'Chats encontrados', chats);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al obtener los chats');  
     }
-};
 
-export const getChatsInfo = async (_: Request, res: Response) => {
-    try {
-        const chats = await service.getAllChats();
-        return ApiResponse.success(res, 'Chats encontrados', chats);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al obtener los chats');  
-    }
-};
+    static async getById(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) return ApiResponse.badRequest(res, 'ID de chat inválido');
 
-export const updateChatInfo = async (req: Request, res: Response) => {
-    try {
-        const updated = await service.updateChat(Number(req.params.id), req.body);
-        if (!updated) {
-            return ApiResponse.notFound(res, 'Chat no encontrado para actualizar');  
+            const chat = await chatService.getChatById(id);
+            return ApiResponse.success(res, 'Chat obtenido correctamente', chat);
+        } catch (error) {
+            return ApiResponse.error(res, error);
         }
-        return ApiResponse.success(res, 'Chat actualizado exitosamente', updated);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al actualizar el chat');  
     }
-};
 
-export const deleteChatInfo = async (req: Request, res: Response) => {
-    try {
-        const deleted = await service.deleteChat(Number(req.params.id));
-        if (!deleted) {
-            return ApiResponse.notFound(res, 'Chat no encontrado para eliminar');  
+    static async getByCustomerId(req: Request, res: Response) {
+        try {
+            const customerId = parseInt(req.params.customerId);
+            if (isNaN(customerId)) return ApiResponse.badRequest(res, 'ID de cliente inválido');
+
+            const chat = await chatService.getChatByCustomerId(customerId);
+            return ApiResponse.success(res, 'Chat del cliente obtenido correctamente', chat);
+        } catch (error) {
+            return ApiResponse.error(res, error);
         }
-        return ApiResponse.success(res, 'Chat eliminado exitosamente', deleted);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al eliminar el chat');  
     }
-};
+
+    static async update(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) return ApiResponse.badRequest(res, 'ID de chat inválido');
+
+            const updated = await chatService.updateChat(id, req.body);
+            return ApiResponse.success(res, 'Chat actualizado correctamente', updated);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+
+    static async delete(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) return ApiResponse.badRequest(res, 'ID de chat inválido');
+
+            await chatService.deleteChat(id);
+            return ApiResponse.success(res, 'Chat eliminado correctamente');
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+
+    static async list(req: Request, res: Response) {
+        try {
+            const chats = await chatService.listChats();
+            return ApiResponse.success(res, 'Listado de chats obtenido correctamente', chats);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+}

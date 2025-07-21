@@ -1,28 +1,55 @@
-// src/application/services/chat_service.ts
-
-import { ChatRepository } from '../../infrastructure/repositories/chat_repository';
+// backend/src/domain/services/chat_service.ts
 import { Chat } from '../../domain/entities/chat_entity';
+import { ChatRepository } from '../../infrastructure/repositories/chat_repository';
 
 export class ChatService {
-    private repo = new ChatRepository();
+    private chatRepository: ChatRepository;
 
-    async createChat(data: Partial<Chat>) {
-        return this.repo.create(data);
+    constructor() {
+        this.chatRepository = new ChatRepository();
     }
 
-    async getChatsByCustomer(customerId: number) {
-        return this.repo.findByCustomerId(customerId);
+    // Crear un chat (solo si no existe ya uno para el cliente)
+    async createChatIfNotExists(customerId: number): Promise<Chat> {
+        const existing = await this.chatRepository.findByCustomerId(customerId);
+        if (existing) return existing;
+
+        const chat = await this.chatRepository.create({
+            customerId,
+            lastConnection: new Date(),
+            createdBy: customerId,
+            updatedBy: customerId,
+        });q
+
+        return chat;
     }
 
-    async getAllChats() {
-        return this.repo.findAll();
+    // Obtener chat por ID
+    async getChatById(id: number): Promise<Chat> {
+        const chat = await this.chatRepository.findById(id);
+        if (!chat) throw new Error('Chat no encontrado');
+        return chat;
     }
 
-    async updateChat(id: number, data: Partial<Chat>) {
-        return this.repo.update(id, data);
+    // Obtener chat por ID de cliente
+    async getChatByCustomerId(customerId: number): Promise<Chat> {
+        const chat = await this.chatRepository.findByCustomerId(customerId);
+        if (!chat) throw new Error('El cliente no tiene un chat asociado');
+        return chat;
     }
 
-    async deleteChat(id: number) {
-        return this.repo.delete(id);
+    // Actualizar datos del chat
+    async updateChat(id: number, updates: Partial<Chat>): Promise<Chat> {
+        return await this.chatRepository.update(id, updates);
+    }
+
+    // Eliminar un chat (opcional)
+    async deleteChat(id: number): Promise<void> {
+        await this.chatRepository.delete(id);
+    }
+
+    // Listar todos los chats (opcional)
+    async listChats(): Promise<Chat[]> {
+        return await this.chatRepository.findAll();
     }
 }

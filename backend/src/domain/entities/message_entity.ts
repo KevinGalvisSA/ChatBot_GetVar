@@ -1,6 +1,16 @@
+// backend/src/domain/entities/message_entity.ts
+
 import {
-    Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Check
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    Check,
+    ManyToOne,
+    JoinColumn
 } from 'typeorm';
+import { Chat } from './chat_entity';
 
 @Check(`"type" IN (0, 1)`)
 @Entity('messages')
@@ -14,8 +24,11 @@ export class Message {
     @Column({ type: 'text' })
     content!: string;
 
-    @Column()
-    chatId!: number;
+    // Relación Many-to-One con Chat
+    @ManyToOne(() => Chat, (chat: Chat) => chat.messages, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'chatId' })
+    chat!: Chat;
+
 
     @Column({ type: 'int', nullable: true })
     createdBy!: number;

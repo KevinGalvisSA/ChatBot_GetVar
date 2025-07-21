@@ -1,20 +1,14 @@
-// src/adapters/http/routes/customer_routes.ts
+// backend/src/adapters/http/routes/customer_routes.ts
 
 import { Router } from 'express';
-import {
-  createCustomer,
-  getCustomer,
-  getAllCustomers,
-  updateCustomer,
-  deleteCustomer
-} from '../controllers/customer_controller';
+import { CustomerController } from '../controllers/customer_controller';
 
 const router = Router();
 
-router.post('/', createCustomer);
-router.get('/', getAllCustomers);
-router.get('/:id', getCustomer);
-router.put('/:id', updateCustomer);
-router.delete('/:id', deleteCustomer);
+router.post('/', CustomerController.getOrCreate); // Crea o retorna si ya existe
+router.get('/:id', CustomerController.getById); // Obtener por ID
+router.get('/phone/:phone', CustomerController.getByPhone); // Obtener por número de teléfono
+router.put('/:id', CustomerController.update); // Actualizar cliente
+router.delete('/:id', CustomerController.delete); // Eliminar cliente
 
 export default router;

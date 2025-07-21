@@ -1,61 +1,84 @@
 // backend/src/adapters/http/controllers/customer_controller.ts
 
 import { Request, Response } from 'express';
-import { CustomerService } from '../../../application/services/customer_service';
 import { ApiResponse } from '../../../handleUtils/apiResponse';
+import { CustomerService } from '../../../application/services/customer_service';
 
-const service = new CustomerService();
+const customerService = new CustomerService();
 
-export const createCustomer = async (req: Request, res: Response) => {
-    try {
-        const customer = await service.registerCustomer(req.body);
-        return ApiResponse.created(res, 'Cliente creado exitosamente', customer);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al crear el cliente'); 
-    }
-};
+export class CustomerController {
+    static async getOrCreate(req: Request, res: Response) {
+        try {
+            const { name, phone } = req.body;
 
-export const getCustomer = async (req: Request, res: Response) => {
-    try {
-        const customer = await service.getCustomerById(Number(req.params.id));
-        if (!customer) {
-            return ApiResponse.notFound(res, 'Cliente no encontrado');  
+            if (!name || typeof name !== 'string' || name.trim() === '') {
+                return ApiResponse.badRequest(res, 'El nombre es obligatorio y debe ser una cadena no vacía');
+            }
+
+            if (!phone || isNaN(Number(phone))) {
+                return ApiResponse.badRequest(res, 'El teléfono es obligatorio y debe ser numérico');
+            }
+
+            const customer = await customerService.getOrCreateCustomer(name, Number(phone));
+            return ApiResponse.success(res, 'Cliente obtenido o creado correctamente', customer);
+        } catch (error) {
+            return ApiResponse.error(res, error);
         }
-        return ApiResponse.success(res, 'Cliente encontrado', customer);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al obtener el cliente'); 
     }
-};
 
-export const getAllCustomers = async (_: Request, res: Response) => {
-    try {
-        const customers = await service.listAllCustomers();
-        return ApiResponse.success(res, 'Clientes encontrados', customers);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al obtener los clientes'); 
-    }
-};
+    static async getById(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) return ApiResponse.badRequest(res, 'ID inválido');
 
-export const updateCustomer = async (req: Request, res: Response) => {
-    try {
-        const updated = await service.updateCustomer(Number(req.params.id), req.body);
-        if (!updated) {
-            return ApiResponse.notFound(res, 'Cliente no encontrado para actualizar');  
+            const customer = await customerService.getCustomerById(id);
+            if (!customer) return ApiResponse.notFound(res, 'Cliente no encontrado');
+
+            return ApiResponse.success(res, 'Cliente obtenido correctamente', customer);
+        } catch (error) {
+            return ApiResponse.error(res, error);
         }
-        return ApiResponse.success(res, 'Cliente actualizado exitosamente', updated);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al actualizar el cliente'); 
     }
-};
 
-export const deleteCustomer = async (req: Request, res: Response) => {
-    try {
-        const deleted = await service.removeCustomer(Number(req.params.id));
-        if (!deleted) {
-            return ApiResponse.notFound(res, 'Cliente no encontrado para eliminar');  
+    static async getByPhone(req: Request, res: Response) {
+        try {
+            const phone = Number(req.params.phone);
+            if (isNaN(phone)) return ApiResponse.badRequest(res, 'Teléfono inválido');
+
+            const customer = await customerService.getCustomerByPhone(phone);
+            if (!customer) return ApiResponse.notFound(res, 'Cliente no encontrado');
+
+            return ApiResponse.success(res, 'Cliente obtenido correctamente', customer);
+        } catch (error) {
+            return ApiResponse.error(res, error);
         }
-        return ApiResponse.success(res, 'Cliente eliminado exitosamente', deleted);  
-    } catch (error) {
-        return ApiResponse.internalServerError(res, 'Error al eliminar el cliente'); 
     }
-};
+
+    static async update(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) return ApiResponse.badRequest(res, 'ID inválido');
+
+            const updated = await customerService.updateCustomer(id, req.body);
+            if (!updated) return ApiResponse.notFound(res, 'Cliente no encontrado para actualizar');
+
+            return ApiResponse.success(res, 'Cliente actualizado correctamente', updated);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+
+    static async delete(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id);
+            if (isNaN(id)) return ApiResponse.badRequest(res, 'ID inválido');
+
+            const deleted = await customerService.deleteCustomer(id);
+            if (!deleted) return ApiResponse.notFound(res, 'Cliente no encontrado para eliminar');
+
+            return ApiResponse.success(res, 'Cliente eliminado correctamente');
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+}

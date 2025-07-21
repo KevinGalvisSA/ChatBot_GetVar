@@ -1,9 +1,11 @@
 -- Tabla que almacena mensajes sin procesar o históricos
-CREATE TABLE `messageStorages` (
-    `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- ID único del mensaje almacenado
-    `sessionId` BIGINT NOT NULL,       -- Identificador de la sesión (referencia al teléfono del cliente)
-    `message` TEXT NOT NULL,           -- Contenido del mensaje
-    `customerId` MEDIUMINT NOT NULL    -- ID del cliente al que pertenece el mensaje
+CREATE TABLE IF NOT EXISTS message_storage (
+    `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `id_customer` MEDIUMINT UNSIGNED NOT NULL,
+    `session_id` BIGINT NOT NULL,
+    `message` TEXT NOT NULL,
+    `message_type` VARCHAR(50) NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 );
 
 -- Tabla principal de clientes

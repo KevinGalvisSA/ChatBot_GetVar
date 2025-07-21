@@ -1,9 +1,17 @@
 // backend/src/domain/entities/chat_entity.ts
 
 import {
-    Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    OneToOne,
+    JoinColumn,
+    OneToMany
 } from 'typeorm';
 import { Customer } from './customer_entity';
+import { Message } from './message_entity';
 
 @Entity('chats')
 export class Chat {
@@ -11,13 +19,17 @@ export class Chat {
     id!: number;
 
     @Column()
-    customerId!: number; // Relacion con el ID del Customer
+    customerId!: number;
 
-    @OneToOne(() => Customer)  // Relación uno a uno con Customer
-    @JoinColumn({ name: 'customerId' })  // El chat "pertenece" a un solo customer
+    @OneToOne(() => Customer)
+    @JoinColumn({ name: 'customerId' })
     customer!: Customer;
 
-    @Column({ type: 'datetime', nullable: true })
+    // Dentro de la clase Chat
+    @OneToMany(() => Message, (message) => message.chat)
+    messages!: Message[];
+
+    @Column({ type: 'datetime' })  // ← NOT NULL en DB
     lastConnection!: Date;
 
     @Column({ type: 'int', nullable: true })

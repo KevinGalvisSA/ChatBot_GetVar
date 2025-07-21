@@ -1,41 +1,35 @@
-// src/infrastructure/repositories/message_repository.ts
+// backend/src/infrastructure/repositories/message_repository.ts
 
 import { AppDataSource } from '../../config/data_source';
+import { Repository } from 'typeorm';
 import { Message } from '../../domain/entities/message_entity';
 
 export class MessageRepository {
-    private repo = AppDataSource.getRepository(Message);
+    private repository: Repository<Message>;
 
-    // Crear un mensaje
-    async create(message: Partial<Message>) {
-        const newMsg = this.repo.create(message);
-        return this.repo.save(newMsg);
+    constructor() {
+        this.repository = AppDataSource.getRepository(Message);
     }
 
-    // Buscar mensajes por chatId
-    async findByChatId(chatId: number) {
-        return this.repo.find({
-            where: { chatId }, // Filtramos por chatId
+    async create(messageData: Partial<Message>): Promise<Message> {
+        const message = this.repository.create(messageData);
+        return await this.repository.save(message);
+    }
+
+    async findById(id: number): Promise<Message | null> {
+        return await this.repository.findOne({ where: { id }, relations: ['chat'] });
+    }
+
+    async getAllByChatId(chatId: number): Promise<Message[]> {
+        return await this.repository.find({
+            where: { chat: { id: chatId } },
+            relations: ['chat'],
+            order: { createdAt: 'ASC' },
         });
     }
 
-    // Obtener todos los mensajes
-    async findAll() {
-        return this.repo.find();
-    }
-
-    // Actualizar un mensaje
-    async update(id: number, message: Partial<Message>) {
-        await this.repo.update(id, message);
-        return this.repo.findOneBy({ id });
-    }
-
-    // Eliminar un mensaje
-    async delete(id: number) {
-        const message = await this.repo.findOneBy({ id });
-        if (message) {
-            return this.repo.remove(message);
-        }
-        return null;
+    async deleteById(id: number): Promise<boolean> {
+        const result = await this.repository.delete(id);
+        return result.affected !== 0;
     }
 }

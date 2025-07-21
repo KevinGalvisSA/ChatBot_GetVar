@@ -1,20 +1,12 @@
-// src/adapters/http/routes/message_routes.ts
+// backend/src/adapters/http/routes/message_routes.ts
 
 import { Router } from 'express';
-import {
-    createMessageData,
-    getMessagesDataByChat,
-    getAllMessagesData,
-    updateMessageData,
-    deleteMessageData
-} from '../controllers/message_controller';
+import { MessageController } from '../controllers/message_controller';
 
 const router = Router();
 
-router.post('/', createMessageData);
-router.get('/', getAllMessagesData);
-router.get('/chat/:chatId', getMessagesDataByChat); 
-router.put('/:id', updateMessageData);
-router.delete('/:id', deleteMessageData);
+router.post('/', MessageController.create); // Crear un nuevo mensaje
+router.get('/chat/:chatId', MessageController.getByChatId); // Obtener todos los mensajes de un chat
+router.delete('/:id', MessageController.deleteById); // Eliminar un mensaje por su ID
 
 export default router;

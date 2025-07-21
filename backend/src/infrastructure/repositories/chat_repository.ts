@@ -1,39 +1,49 @@
+// src/domain/repositories/chat_repository.ts
 import { AppDataSource } from '../../config/data_source';
-import { Chat } from '../../domain/entities/chat_entity';
+import { Chat } from '../..//domain/entities/chat_entity';
+import { Repository } from 'typeorm';
 
 export class ChatRepository {
-    private repo = AppDataSource.getRepository(Chat);
+  private repo: Repository<Chat>;
 
-    // Crear un chat
-    async create(chat: Partial<Chat>) {
-        const newChat = this.repo.create(chat);
-        return this.repo.save(newChat);
-    }
+  constructor() {
+    this.repo = AppDataSource.getRepository(Chat);
+  }
 
-    // Buscar chat por customerId
-    async findByCustomerId(customerId: number) {
-        return this.repo.find({
-            where: { customerId }, // Filtramos por customerId
-        });
-    }
+  // ✅ Buscar un chat por ID
+  async findById(id: number): Promise<Chat | null> {
+    return await this.repo.findOne({ where: { id }, relations: ['customer'] });
+  }
 
-    // Obtener todos los chats
-    async findAll() {
-        return this.repo.find();
-    }
+  // ✅ Buscar por customerId (como validación previa a crear)
+  async findByCustomerId(customerId: number): Promise<Chat | null> {
+    return await this.repo.findOne({ where: { customerId } });
+  }
 
-    // Actualizar chat
-    async update(id: number, chat: Partial<Chat>) {
-        await this.repo.update(id, chat);
-        return this.repo.findOneBy({ id });
-    }
+  // ✅ Crear nuevo chat
+  async create(chatData: Partial<Chat>): Promise<Chat> {
+    const newChat = this.repo.create(chatData);
+    return await this.repo.save(newChat);
+  }
 
-    // Eliminar un chat
-    async delete(id: number) {
-        const chat = await this.repo.findOneBy({ id });
-        if (chat) {
-            return this.repo.remove(chat);
-        }
-        return null;
+  // ✅ Actualizar chat existente
+  async update(id: number, updateData: Partial<Chat>): Promise<Chat> {
+    const chat = await this.findById(id);
+    if (!chat) throw new Error('Chat no encontrado');
+    Object.assign(chat, updateData);
+    return await this.repo.save(chat);
+  }
+
+  // ✅ Eliminar un chat (opcional)
+  async delete(id: number): Promise<void> {
+    const result = await this.repo.delete(id);
+    if (result.affected === 0) {
+      throw new Error('Chat no encontrado para eliminar');
     }
+  }
+
+  // ✅ Listar todos los chats (opcional)
+  async findAll(): Promise<Chat[]> {
+    return await this.repo.find({ relations: ['customer'] });
+  }
 }

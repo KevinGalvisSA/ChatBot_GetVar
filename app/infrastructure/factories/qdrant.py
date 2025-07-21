@@ -41,7 +41,7 @@ class QdrantService:
         
         # Devolver resultados como ContextChunk
         return [
-            ContextChunk(content=result.payload['text'])
+            ContextChunk(text=result.payload['text'], score=result.score)
             for result in results
             if result.payload and 'text' in result.payload
         ]

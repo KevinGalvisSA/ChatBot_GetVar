@@ -4,6 +4,7 @@ uvicorn
 pydantic
 google-generativeai
 google.genai
+dotenv
 
 # LangChain y Langraph (para el chatbot)
 langchain
@@ -25,3 +26,4 @@ PyMuPDF
 # Librería para conectar a la base de datos SQL
 sqlalchemy 
 pymysql
+cryptography

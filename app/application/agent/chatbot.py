@@ -1,7 +1,6 @@
-from app.infrastructure.factories.langraph_orchestator import LangraphOrchestrator
+
 from app.infrastructure.factories.qdrant import QdrantService
 from app.infrastructure.factories.gemini_integration import answer_with_gemini
-from app.infrastructure.sql.setupDB import ChatMessageHistory
 from app.infrastructure.sql.message_saver import save_message
 from app.infrastructure.factories.extract_info import InfoExtractor
 from app.config.bot_regulations import BotRegulations
@@ -53,7 +52,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
     # Obtener respuesta desde Gemini (⚠️ aquí corregimos el keyword argument)
     try:
-        response = answer_with_gemini(user_input=user_input, context_chunks=context_chunks)
+        response = answer_with_gemini(question=user_input, chunks=context_chunks)
 
     except Exception as e:
         response = f"❌ Error al usar Gemini: {str(e)}"

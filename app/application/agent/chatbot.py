@@ -1,10 +1,12 @@
 from app.infrastructure.factories.qdrant import QdrantService
 from app.infrastructure.factories.gemini_integration import answer_with_gemini
-from app.infrastructure.sql.setupDB import ChatMessageHistory
+from app.infrastructure.sql.setupDB import ChatMessageHistory, get_customer_by_phone
 from app.infrastructure.sql.message_saver import save_message
 from app.infrastructure.factories.extract_info import InfoExtractor
 from app.config.bot_regulations import BotRegulations
 from app.infrastructure.sql.customer_saver import get_or_create_customer
+from langchain_core.messages import HumanMessage
+from app.models.context_chunk import ContextChunk
 import os
 from dotenv import load_dotenv
 
@@ -37,7 +39,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
     # Obtener o crear cliente
     try:
-        customer = get_or_create_customer(name=name_known, phone_number=phone_num)
+        customer = get_or_create_customer(name=name_known, phone_number=phone_num) # type: ignore
         id_customer = customer.id if customer else 0
     except Exception as e:
         print(f"❌ Error en get_or_create_customer: {e}")
@@ -54,7 +56,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 # Obtener respuesta desde Gemini usando historial de mensajes
     try:
         # 1️⃣ Recuperar historial desde la base de datos
-        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer)
+        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer) # type: ignore
         messages = chat_history.get_messages()
 
     # 2️⃣ Formatear el historial como texto plano
@@ -70,14 +72,52 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
         response = answer_with_gemini(question=prompt_con_historial, chunks=context_chunks)
 
     except Exception as e:
-        response = f"❌ Error al usar Gemini: {str(e)}"
+        response = f"❌ Error al usar el Gemini: {str(e)}"
 
 
     # Guardar mensajes en la base de datos
     try:
-        save_message(id_customer=id_customer, session_id=int(session_id), content=user_input, message_type="human")
-        save_message(id_customer=id_customer, session_id=int(session_id), content=response, message_type="ai")
+        save_message(id_customer=id_customer, session_id=int(session_id), content=user_input, message_type="human") # type: ignore
+        save_message(id_customer=id_customer, session_id=int(session_id), content=response, message_type="ai") # type: ignore
     except Exception as e:
         print(f"❌ Error guardando en messageStorage: {e}")
 
     return response
+
+def generate_chat_summary(session_id: str) -> str:
+    try:
+        # Obtener número como int
+        phone_number = int(session_id)
+
+        # Validar cliente
+        customer = get_customer_by_phone(phone_number)
+        if not customer:
+            return "❌ No se encontró un cliente con ese número."
+
+        # Historial del cliente
+        history = ChatMessageHistory(
+            session_id=session_id,
+            id_customer=customer.id  # type: ignore si es necesario
+        )
+
+        messages = history.get_messages()
+        if not messages:
+            return "❌ No hay mensajes para generar un resumen."
+
+        # Armar historial con formato limpio
+        formatted_history = "\n".join([
+            f"Usuario: {m.content}" if isinstance(m, HumanMessage) else f"Bot: {m.content}"
+            for m in messages
+        ])
+
+        # Crear el chunk con score dummy
+        resumen = answer_with_gemini(
+            question="Resume la siguiente conversación brevemente.",
+            chunks=[ContextChunk(text=formatted_history, score=1.0)]
+        )
+
+        return resumen
+
+    except Exception as e:
+        print(f"❌ Error generando resumen: {e}")
+        return "❌ Error interno al generar resumen."

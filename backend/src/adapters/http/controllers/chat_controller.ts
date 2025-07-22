@@ -57,6 +57,35 @@ export class ChatController {
         }
     }
 
+    static async updateState(req: Request, res: Response) {
+        try {
+            const id = Number(req.params.id);
+            const { state } = req.body;
+
+            if (!Number.isInteger(id) || id <= 0) {
+                return ApiResponse.badRequest(res, 'ID de chat inválido');
+            }
+
+            if (state === undefined || (state !== 0 && state !== 1)) {
+                return ApiResponse.badRequest(res, 'El campo "state" es requerido y debe ser 0 o 1');
+            }
+
+            const chat = await chatService.getChatById(id);
+            if (!chat) {
+                return ApiResponse.notFound(res, 'Chat no encontrado');
+            }
+
+            if (chat.state === state) {
+                return ApiResponse.success(res, 'El estado ya está establecido en ese valor', chat);
+            }
+
+            const updatedChat = await chatService.updateChatState(id, state);
+            return ApiResponse.success(res, 'Estado actualizado correctamente', updatedChat);
+        } catch (error) {
+            return ApiResponse.error(res, error);
+        }
+    }
+
     static async delete(req: Request, res: Response) {
         try {
             const id = parseInt(req.params.id);

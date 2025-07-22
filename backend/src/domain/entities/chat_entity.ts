@@ -13,7 +13,7 @@ import {
 import { Customer } from './customer_entity';
 import { Message } from './message_entity';
 
-@Entity('chats')
+@Entity('chat')
 export class Chat {
     @PrimaryGeneratedColumn()
     id!: number;
@@ -25,11 +25,10 @@ export class Chat {
     @JoinColumn({ name: 'customerId' })
     customer!: Customer;
 
-    // Dentro de la clase Chat
     @OneToMany(() => Message, (message) => message.chat)
     messages!: Message[];
 
-    @Column({ type: 'datetime' })  // ← NOT NULL en DB
+    @Column({ type: 'datetime' })
     lastConnection!: Date;
 
     @Column({ type: 'int', nullable: true })
@@ -37,6 +36,9 @@ export class Chat {
 
     @Column({ type: 'int', nullable: true })
     updatedBy!: number;
+
+    @Column({ type: 'tinyint' })
+    state!: number;
 
     @CreateDateColumn()
     createdAt!: Date;

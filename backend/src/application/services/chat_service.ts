@@ -1,6 +1,6 @@
-// backend/src/domain/services/chat_service.ts
 import { Chat } from '../../domain/entities/chat_entity';
 import { ChatRepository } from '../../infrastructure/repositories/chat_repository';
+import axios from 'axios';
 
 export class ChatService {
     private chatRepository: ChatRepository;
@@ -9,7 +9,6 @@ export class ChatService {
         this.chatRepository = new ChatRepository();
     }
 
-    // Crear un chat (solo si no existe ya uno para el cliente)
     async createChatIfNotExists(customerId: number): Promise<Chat> {
         const existing = await this.chatRepository.findByCustomerId(customerId);
         if (existing) return existing;
@@ -24,32 +23,56 @@ export class ChatService {
         return chat;
     }
 
-    // Obtener chat por ID
     async getChatById(id: number): Promise<Chat> {
         const chat = await this.chatRepository.findById(id);
         if (!chat) throw new Error('Chat no encontrado');
         return chat;
     }
 
-    // Obtener chat por ID de cliente
     async getChatByCustomerId(customerId: number): Promise<Chat> {
         const chat = await this.chatRepository.findByCustomerId(customerId);
         if (!chat) throw new Error('El cliente no tiene un chat asociado');
         return chat;
     }
 
-    // Actualizar datos del chat
     async updateChat(id: number, updates: Partial<Chat>): Promise<Chat> {
         return await this.chatRepository.update(id, updates);
     }
 
-    // Eliminar un chat (opcional)
     async deleteChat(id: number): Promise<void> {
         await this.chatRepository.delete(id);
     }
 
-    // Listar todos los chats (opcional)
     async listChats(): Promise<Chat[]> {
         return await this.chatRepository.findAll();
+    }
+
+    // 🆕 NUEVA FUNCIÓN: actualizar solo el estado y generar resumen si se pone inactivo
+    async updateChatState(id: number, newState: number): Promise<Chat> {
+        const chat = await this.chatRepository.findById(id);
+        if (!chat) throw new Error('Chat no encontrado');
+
+        // Si ya está en el mismo estado, no hacemos nada
+        if (chat.state === newState) return chat;
+
+        const updatedChat = await this.chatRepository.updateState(id, newState);
+
+        if (newState === 0) {
+            try {
+                const resumenResponse = await axios.get(
+                    `http://localhost:8000/chat`
+                );
+                const resumen = resumenResponse.data;
+                console.log('📝 Resumen generado:', resumen);
+
+                // Puedes guardar el resumen si tienes una tabla/resumen_entity
+                // o enviarlo por socket, etc.
+
+            } catch (error) {
+                console.error('❌ Error al solicitar resumen al bot:', error);
+            }
+        }
+
+        return updatedChat;
     }
 }

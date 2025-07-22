@@ -15,7 +15,7 @@ load_dotenv()
 Kai_Agent_DB = os.getenv("DB_HOST")
 
 # 🛠️ Crear el engine con conexión persistente
-engine = create_engine(Kai_Agent_DB, pool_recycle=600, pool_pre_ping=True)
+engine = create_engine(Kai_Agent_DB, pool_recycle=600, pool_pre_ping=True) # type: ignore
 
 # ✅ Probar conexión
 try:
@@ -40,7 +40,7 @@ def execute_try(func: Callable[[], T], max_retries: int = 3) -> T:
                 print(f"🔄 Reintentando conexión a la base de datos (intento {retries}/{max_retries})")
                 continue
             raise e
-    raise last_error
+    raise last_error # type: ignore
 
 
 def get_customer_by_phone(phone: int) -> Customer | None:
@@ -56,7 +56,7 @@ def create_customer(name: str, phone: int, created_by: int = 1, updated_by: int 
     def _create():
         db = SessionLocal()
         try:
-            now = datetime.utcnow()
+            now = datetime.utcnow() # type: ignore
             customer = Customer(
                 name=name,
                 phone_number=phone,
@@ -100,10 +100,10 @@ class ChatMessageHistory:
                 )
                 messages = []
                 for row in rows:
-                    if row.message_type == "human":
-                        messages.append(HumanMessage(content=row.message))
-                    elif row.message_type == "ai":
-                        messages.append(AIMessage(content=row.message))
+                    if row.message_type == "human": # type: ignore
+                        messages.append(HumanMessage(content=row.message)) # type: ignore
+                    elif row.message_type == "ai": # type: ignore
+                        messages.append(AIMessage(content=row.message)) # type: ignore
                     else:
                         print(f"⚠️ Tipo de mensaje desconocido: {row.message_type}")
                 return messages

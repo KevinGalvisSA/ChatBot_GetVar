@@ -60,7 +60,7 @@ def answer_with_gemini(question: str, chunks: list) -> str:
         return response.text
     
     except Exception as e:
-        return f"❌ Error al usar Gemini: {str(e)}"
+        return f"❌ Error al usar the Gemini: {str(e)}"
 
 # Prueba con una pregunta simple
 question = "Hola! Mi nombre es Kevin Galvis y mi numero telefonico es 3056472933. Puedo saber como automatizar un bot que haga deteccion de fraudes?"

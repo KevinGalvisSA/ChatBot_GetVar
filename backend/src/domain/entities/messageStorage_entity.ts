@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { Customer } from './customer_entity';
 
-@Entity('message_storage')
+@Entity('messageStorage')
 export class MessageStorage {
   @PrimaryGeneratedColumn()
   id!: number;

@@ -6,7 +6,10 @@ socket.on('connect', () => {
   console.log('Conectado al servidor WebSocket');
   
   // Enviar un mensaje al servidor
-  socket.emit('send_message', { message: '¿Cómo mejorar mi flujo de trabajo con IA?' });
+  socket.emit('send_message', {
+  "message": "Me llamo Roberto Garcia, quisiera averiguar formas de gestionar pedidos de clientes para mi empresa",
+  "session_id": "123124523"
+});
 });
 
 // Escuchar la respuesta del servidor

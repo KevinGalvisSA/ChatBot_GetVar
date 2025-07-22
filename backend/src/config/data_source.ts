@@ -1,6 +1,9 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Message } from "../domain/entities/message_entity";  // Asegúrate de importar tus entidades aquí
+import { Chat } from "../domain/entities/chat_entity";
+import { Customer } from "../domain/entities/customer_entity";
+import { MessageStorage } from "../domain/entities/messageStorage_entity";
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -15,7 +18,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME,
     synchronize: true,
     logging: true,
-    entities: [Message],
+    entities: [Message, Chat, Customer, MessageStorage],
     migrations: [],
     subscribers: [],
 });

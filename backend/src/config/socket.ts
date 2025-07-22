@@ -9,7 +9,17 @@ export function configureSocket(io: Server) {
       try {
         console.log('Mensaje recibido desde el frontend:', data);
 
-        const pythonResponse = await pythonCommunication.sendMessageToPython(data.message);
+        const { message, session_id } = data;
+
+        // Asegúrate de que ambos campos existen
+        if (!message || !session_id) {
+          socket.emit('receive_message', '❌ Faltan campos: message o session_id');
+          return;
+        }
+
+        // Llamada con ambos argumentos
+        const pythonResponse = await pythonCommunication.sendMessageToPython(message, session_id);
+
         socket.emit('receive_message', pythonResponse);
       } catch (error) {
         console.error('Error en socket:', error);

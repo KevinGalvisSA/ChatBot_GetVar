@@ -19,7 +19,7 @@ export class ChatService {
             lastConnection: new Date(),
             createdBy: customerId,
             updatedBy: customerId,
-        });q
+        });
 
         return chat;
     }

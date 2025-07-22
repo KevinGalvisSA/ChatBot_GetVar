@@ -4,11 +4,11 @@ from typing import Dict, Optional
 class InfoExtractor:
     def __init__(self):
         """
-        Inicializa el extractor de información con patrones de búsqueda para nombre y teléfono.
+        Inicializa el extractor de información con patrones ampliados para nombre y teléfono.
         """
         self.patterns = {
-            'name': r"(?:mi\s+nombre\s+es|nombre\s*[:\-]?)\s*([A-Za-zÁÉÍÓÚáéíóúÑñ\s]+)",
-            'phone': r"(?:mi\s+número\s+de\s+tel[eé]fono\s+es|tel[eé]fono\s*[:\-]?)\s*(\+?\d[\d\s\-]{6,15})"
+            'name': r"(?:mi\s+nombre\s+es|nombre\s*[:\-]?|me\s+llamo|soy)\s+([A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ]+){0,2})",
+            'phone': r"(?:n[uú]mero\s+de\s+tel[eé]fono\s+es|tel[eé]fono\s*[:\-]?|contactarme\s+al|celular\s*[:\-]?|ll[aá]mame\s+al)?\s*(\+?\d[\d\s\-]{6,15})"
         }
 
     def extract(self, text: str) -> Dict[str, Optional[str]]:
@@ -34,7 +34,7 @@ class InfoExtractor:
         # Buscar teléfono
         phone_match = re.search(self.patterns['phone'], text, re.IGNORECASE)
         if phone_match:
-            extracted_info['phone'] = re.sub(r"[^\d+]", "", phone_match.group(1).strip())  # Limpia espacios o guiones
+            extracted_info['phone'] = re.sub(r"[^\d+]", "", phone_match.group(1).strip())
 
         return extracted_info
 
@@ -58,3 +58,4 @@ class InfoExtractor:
             return f"Para continuar necesito {', y '.join(missing)}. ¿Podrías proporcionármelos por favor?"
 
         return "✅ ¡Gracias por la información! Ahora dime, ¿en qué puedo ayudarte?"
+    

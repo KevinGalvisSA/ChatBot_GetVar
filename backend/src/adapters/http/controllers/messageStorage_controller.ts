@@ -1,8 +1,8 @@
-// backend/src/adapters/http/controllers/messageStorage_controller.ts
+// backend/src/adapters/http/controllers/message_storage_controller.ts
 
 import { Request, Response } from 'express';
-import { MessageStorageService } from '../../../application/services/messageStorage_service';
 import { ApiResponse } from '../../../handleUtils/apiResponse';
+import { MessageStorageService } from '../../../application/services/messageStorage_service';
 
 const messageStorageService = new MessageStorageService();
 
@@ -10,8 +10,8 @@ export class MessageStorageController {
     static async create(req: Request, res: Response) {
         try {
             const data = req.body;
-            const created = await messageStorageService.createStorageMessage(data);
-            return ApiResponse.created(res, 'Mensaje almacenado correctamente', created);
+            const result = await messageStorageService.createStorageMessage(data);
+            return ApiResponse.created(res, 'Mensaje almacenado correctamente', result);
         } catch (error) {
             return ApiResponse.error(res, error);
         }
@@ -21,15 +21,15 @@ export class MessageStorageController {
         try {
             const customerId = parseInt(req.params.customerId);
             if (isNaN(customerId)) {
-                return ApiResponse.badRequest(res, 'Parámetro customerId inválido');
+                return ApiResponse.badRequest(res, 'ID de cliente inválido');
             }
 
-            const record = await messageStorageService.getByCustomerId(customerId);
-            if (!record) {
-                return ApiResponse.notFound(res, 'No se encontró almacenamiento para este cliente');
+            const message = await messageStorageService.getByCustomerId(customerId);
+            if (!message) {
+                return ApiResponse.notFound(res, 'Mensaje no encontrado para el cliente');
             }
 
-            return ApiResponse.success(res, 'Mensaje encontrado', record);
+            return ApiResponse.success(res, 'Mensaje obtenido correctamente', message);
         } catch (error) {
             return ApiResponse.error(res, error);
         }
@@ -37,13 +37,17 @@ export class MessageStorageController {
 
     static async getBySessionId(req: Request, res: Response) {
         try {
-            const sessionId = BigInt(req.params.sessionId);
-            const record = await messageStorageService.getBySessionId(sessionId);
-            if (!record) {
-                return ApiResponse.notFound(res, 'No se encontró almacenamiento para esta sesión');
+            const sessionId = parseInt(req.params.sessionId);
+            if (isNaN(sessionId)) {
+                return ApiResponse.badRequest(res, 'Session ID inválido');
             }
 
-            return ApiResponse.success(res, 'Mensaje encontrado', record);
+            const message = await messageStorageService.getBySessionId(sessionId);
+            if (!message) {
+                return ApiResponse.notFound(res, 'Mensaje no encontrado para la sesión');
+            }
+
+            return ApiResponse.success(res, 'Mensaje obtenido correctamente', message);
         } catch (error) {
             return ApiResponse.error(res, error);
         }
@@ -53,12 +57,12 @@ export class MessageStorageController {
         try {
             const customerId = parseInt(req.params.customerId);
             if (isNaN(customerId)) {
-                return ApiResponse.badRequest(res, 'Parámetro customerId inválido');
+                return ApiResponse.badRequest(res, 'ID de cliente inválido');
             }
 
             const deleted = await messageStorageService.deleteByCustomerId(customerId);
             if (!deleted) {
-                return ApiResponse.notFound(res, 'No se encontró mensaje para eliminar');
+                return ApiResponse.notFound(res, 'No se encontró un mensaje para eliminar');
             }
 
             return ApiResponse.success(res, 'Mensaje eliminado correctamente');

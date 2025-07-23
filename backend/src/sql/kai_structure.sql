@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS messageStorage (
     `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `id_customer` MEDIUMINT UNSIGNED NOT NULL,
-    `id_session` BIGINT NOT NULL,
+    `session_id` BIGINT NOT NULL,
     `message` TEXT NOT NULL,
     `message_type` VARCHAR(50) NOT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS messageStorage (
 CREATE TABLE `customer` (
     `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- ID único del cliente
     `name` VARCHAR(100) NOT NULL,     -- Nombre del cliente
-    `phone_number` BIGINT NOT NULL,          -- Número de teléfono del cliente (usado también como session_id en messageStorages)
+    `phone` BIGINT NOT NULL,          -- Número de teléfono del cliente (usado también como session_id en messageStorages)
     `createdBy` MEDIUMINT NULL,       -- ID del usuario que creó este cliente (nullable)
     `updatedBy` MEDIUMINT NULL,       -- ID del usuario que actualizó este cliente (nullable)
     `createdAt` TIMESTAMP NOT NULL,   -- Fecha y hora de creación del registro
@@ -24,7 +24,7 @@ CREATE TABLE `messages` (
     `id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, -- ID único del mensaje
     `type` TINYINT NOT NULL,          -- Tipo de mensaje (0 = entrante, 1 = saliente, etc.)
     `content` TEXT NOT NULL,          -- Contenido del mensaje
-    `chatId` MEDIUMINT NOT NULL,      -- ID del chat al que pertenece este mensaje
+    `chat_id` MEDIUMINT NOT NULL,      -- ID del chat al que pertenece este mensaje
     `createdBy` MEDIUMINT NULL,       -- ID del usuario que creó este mensaje (nullable)
     `updatedBy` MEDIUMINT NULL,       -- ID del usuario que actualizó este mensaje (nullable)
     `createdAt` TIMESTAMP NOT NULL,   -- Fecha y hora de creación del mensaje
@@ -47,13 +47,13 @@ CREATE TABLE `chat` (
 
 -- Cada mensaje apunta al chat al que pertenece
 ALTER TABLE `messages`
-ADD CONSTRAINT `messages_chatid_foreign`
-FOREIGN KEY (`chatId`) REFERENCES `chat`(`id`);
+ADD CONSTRAINT `messages_chat_id_foreign`
+FOREIGN KEY (`chat_id`) REFERENCES `chat`(`id`);
 
 -- messageStorages.session_id se relaciona con el teléfono del cliente
 ALTER TABLE `messageStorages`
 ADD CONSTRAINT `messagestorages_session_id_foreign`
-FOREIGN KEY (`session_id`) REFERENCES `customer`(`phone_number`);
+FOREIGN KEY (`session_id`) REFERENCES `customer`(`phone`);
 
 -- messageStorages.id_customer se relaciona con el ID del cliente
 ALTER TABLE `messageStorages`

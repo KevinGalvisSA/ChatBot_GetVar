@@ -17,13 +17,13 @@ export class Summary {
     id!: number;
 
     @Column({ type: 'bigint' })
-    id_session!: number;
+    session_id!: number;
 
     @Column({ type: 'mediumint', unsigned: true })
-    chatId!: number;
+    chat_id!: number;
 
     @ManyToOne(() => Chat)
-    @JoinColumn({ name: 'chatId' })
+    @JoinColumn({ name: 'chat_id' })
     chat!: Chat;
 
     @Column({ type: 'text' })

@@ -26,8 +26,8 @@ export class MessageService {
         return await this.messageRepository.create(data);
     }
 
-    async getMessagesByChat(chatId: number): Promise<Message[]> {
-        return await this.messageRepository.getAllByChatId(chatId);
+    async getMessagesByChat(chat_id: number): Promise<Message[]> {
+        return await this.messageRepository.getAllBychat_id(chat_id);
     }
 
     async deleteMessage(id: number): Promise<boolean> {

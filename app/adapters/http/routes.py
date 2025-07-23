@@ -7,14 +7,15 @@ router = APIRouter()
 
 class UserInput(BaseModel):
     message: str
-    id_session: str
+    session_id: str
+    chat_id: int | None = None  # lo ignoramos
 
 @router.post("/chat")
 async def chat_with_bot_endpoint(user_input: UserInput):
     try:
         response = chat_with_bot(
             user_input=user_input.message,
-            id_session=user_input.id_session
+            session_id=user_input.session_id
         )
         return {"response": response}
     except Exception as e:
@@ -26,7 +27,7 @@ async def chat_with_bot_endpoint(user_input: UserInput):
 @router.post("/resumen")
 async def resumen_endpoint(user_input: UserInput):
     try:
-        resumen = generate_chat_summary(id_session=user_input.id_session)
+        resumen = generate_chat_summary(session_id=user_input.session_id)
         return {"resumen": resumen}
     except Exception as e:
         raise HTTPException(

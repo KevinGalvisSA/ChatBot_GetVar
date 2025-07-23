@@ -1,7 +1,7 @@
 import { Chat } from '../../domain/entities/chat_entity';
 import { ChatRepository } from '../../infrastructure/repositories/chat_repository';
 import { SummaryRepository } from '../../infrastructure/repositories/summary_repository';
-import { CustomerRepository } from '../../infrastructure/repositories/customer_repository'; 
+import { CustomerRepository } from '../../infrastructure/repositories/customer_repository';
 import { pythonCommunication } from './pythonCommunication';
 
 export class ChatService {
@@ -12,7 +12,7 @@ export class ChatService {
     constructor() {
         this.chatRepository = new ChatRepository();
         this.resumenRepository = new SummaryRepository();
-        this.customerRepository = new CustomerRepository(); 
+        this.customerRepository = new CustomerRepository();
     }
 
     async createChatIfNotExists(id_customer: number): Promise<Chat> {
@@ -54,25 +54,36 @@ export class ChatService {
     }
 
     async updateChatStateByCustomer(id_customer: number, newState: number): Promise<Chat> {
+        console.log('🔍 updateChatStateByCustomer llamado con:', id_customer, newState);
+
         const chat = await this.chatRepository.findByid_customer(id_customer);
         if (!chat) throw new Error('Chat no encontrado para este cliente');
 
-        if (chat.state === newState) return chat;
+        console.log('Datos del chat:', chat);
 
-        const updatedChat = await this.chatRepository.updateState(chat.id, newState);
+        let updatedChat: Chat;
+
+        if (chat.state !== newState) {
+            updatedChat = await this.chatRepository.updateState(chat.id, newState);
+            console.log('✅ Estado del chat actualizado:', updatedChat);
+        } else {
+            updatedChat = chat;
+            console.log('ℹ️ Estado del chat ya era el solicitado, no se actualizó.');
+        }
 
         if (newState === 0) {
             try {
-                const customer = await this.customerRepository.findById(id_customer); 
+                const customer = await this.customerRepository.findById(id_customer);
                 if (!customer) throw new Error('Cliente no encontrado');
 
-                const id_session = customer.phone_number.toString(); 
+                const session_id = customer.phone.toString();
 
-                const resumen = await pythonCommunication.generateSummary(chat.id, id_session);
+                const resumen = await pythonCommunication.generateSummary(chat.id, session_id);
+                console.log('🧠 Resumen generado:', resumen);
 
                 await this.resumenRepository.create({
-                    id_session: customer.phone_number,
-                    chatId: chat.id,
+                    session_id: customer.phone,
+                    chat_id: chat.id,
                     message: resumen,
                     createdAt: new Date(),
                     updatedAt: new Date(),
@@ -87,7 +98,8 @@ export class ChatService {
         return updatedChat;
     }
 
-    async getResumesByChat(chatId: number) {
-        return await this.resumenRepository.findByChatId(chatId);
+
+    async getResumesByChat(chat_id: number) {
+        return await this.resumenRepository.findBychat_id(chat_id);
     }
 }

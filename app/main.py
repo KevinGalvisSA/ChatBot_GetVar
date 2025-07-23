@@ -12,7 +12,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(
         status_code=422,
         content={
-            "error": "❌ Entrada inválida. Asegúrate de enviar 'id_session' y 'message'.",
+            "error": "❌ Entrada inválida. Asegúrate de enviar 'session_id' y 'message'.",
             "detalles": exc.errors()
         },
     )

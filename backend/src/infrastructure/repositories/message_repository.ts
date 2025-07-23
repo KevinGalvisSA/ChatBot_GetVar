@@ -20,9 +20,9 @@ export class MessageRepository {
         return await this.repository.findOne({ where: { id }, relations: ['chat'] });
     }
 
-    async getAllByChatId(chatId: number): Promise<Message[]> {
+    async getAllBychat_id(chat_id: number): Promise<Message[]> {
         return await this.repository.find({
-            where: { chat: { id: chatId } },
+            where: { chat: { id: chat_id } },
             relations: ['chat'],
             order: { createdAt: 'ASC' },
         });

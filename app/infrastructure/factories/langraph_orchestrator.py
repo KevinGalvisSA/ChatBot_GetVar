@@ -35,7 +35,7 @@ class LangraphOrchestrator:
 
         self.graph = self.graph_builder.compile()
 
-    def run(self, user_input: str, id_session: str) -> dict:
+    def run(self, user_input: str, session_id: str) -> dict:
         """
         Ejecuta todo el flujo LangGraph para la consulta del usuario.
         Retorna un dict con response, extracted_info y validation_message
@@ -69,7 +69,7 @@ class LangraphOrchestrator:
         state["extracted_info"] = extracted_info
         state["validation_message"] = validation_message
 
-        if not extracted_info.get("name") or not extracted_info.get("phone_number"):
+        if not extracted_info.get("name") or not extracted_info.get("phone"):
             state["response"] = validation_message
             return state
 

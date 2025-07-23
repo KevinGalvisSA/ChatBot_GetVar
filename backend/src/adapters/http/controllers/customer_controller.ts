@@ -9,17 +9,17 @@ const customerService = new CustomerService();
 export class CustomerController {
     static async getOrCreate(req: Request, res: Response) {
         try {
-            const { name, phone_number } = req.body;
+            const { name, phone } = req.body;
 
             if (!name || typeof name !== 'string' || name.trim() === '') {
                 return ApiResponse.badRequest(res, 'El nombre es obligatorio y debe ser una cadena no vacía');
             }
 
-            if (!phone_number || isNaN(Number(phone_number))) {
+            if (!phone || isNaN(Number(phone))) {
                 return ApiResponse.badRequest(res, 'El teléfono es obligatorio y debe ser numérico');
             }
 
-            const customer = await customerService.getOrCreateCustomer(name, Number(phone_number));
+            const customer = await customerService.getOrCreateCustomer(name, Number(phone));
             return ApiResponse.success(res, 'Cliente obtenido o creado correctamente', customer);
         } catch (error) {
             return ApiResponse.error(res, error);
@@ -40,12 +40,12 @@ export class CustomerController {
         }
     }
 
-    static async getByphone_number(req: Request, res: Response) {
+    static async getByphone(req: Request, res: Response) {
         try {
-            const phone_number = Number(req.params.phone_number);
-            if (isNaN(phone_number)) return ApiResponse.badRequest(res, 'Teléfono inválido');
+            const phone = Number(req.params.phone);
+            if (isNaN(phone)) return ApiResponse.badRequest(res, 'Teléfono inválido');
 
-            const customer = await customerService.getCustomerByphone_number(phone_number);
+            const customer = await customerService.getCustomerByphone(phone);
             if (!customer) return ApiResponse.notFound(res, 'Cliente no encontrado');
 
             return ApiResponse.success(res, 'Cliente obtenido correctamente', customer);

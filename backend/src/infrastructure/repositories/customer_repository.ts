@@ -15,8 +15,8 @@ export class CustomerRepository {
         return await this.repository.findOne({ where: { id } });
     }
 
-    async findByphone_number(phone_number: number): Promise<Customer | null> {
-        return await this.repository.findOne({ where: { phone_number } });
+    async findByphone(phone: number): Promise<Customer | null> {
+        return await this.repository.findOne({ where: { phone } });
     }
 
     async create(customerData: Partial<Customer>): Promise<Customer> {

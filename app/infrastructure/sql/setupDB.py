@@ -43,23 +43,23 @@ def execute_try(func: Callable[[], T], max_retries: int = 3) -> T:
     raise last_error # type: ignore
 
 
-def get_customer_by_phone_number(phone_number: int) -> Customer | None:
+def get_customer_by_phone(phone: int) -> Customer | None:
     def _get():
         db = SessionLocal()
         try:
-            return db.query(Customer).filter(Customer.phone_number_number == phone_number).first()
+            return db.query(Customer).filter(Customer.phone == phone).first()
         finally:
             db.close()
     return execute_try(_get)
 
-def create_customer(name: str, phone_number: int, created_by: int = 1, updated_by: int = 1) -> Customer:
+def create_customer(name: str, phone: int, created_by: int = 1, updated_by: int = 1) -> Customer:
     def _create():
         db = SessionLocal()
         try:
             now = datetime.utcnow() # type: ignore
             customer = Customer(
                 name=name,
-                phone_number_number=phone_number,
+                phone=phone,
                 createdBy=created_by,
                 updatedBy=updated_by,
                 createdAt=now,
@@ -82,8 +82,8 @@ from sqlalchemy.orm import sessionmaker
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class ChatMessageHistory:
-    def __init__(self, id_session: str, id_customer: int = 0, limit: int = 15):
-        self.id_session = str(id_session)
+    def __init__(self, session_id: str, id_customer: int = 0, limit: int = 15):
+        self.session_id = str(session_id)
         self.id_customer = id_customer
         self.limit = limit
 
@@ -93,7 +93,7 @@ class ChatMessageHistory:
             try:
                 rows = (
                     db.query(MessageStorage)
-                    .filter(MessageStorage.id_session == self.id_session)
+                    .filter(MessageStorage.session_id == self.session_id)
                     .order_by(MessageStorage.id.asc())
                     .limit(self.limit)
                     .all()
@@ -126,7 +126,7 @@ class ChatMessageHistory:
                 # Crear la instancia del modelo
                 model_instance = MessageStorage(
                     id_customer=self.id_customer,
-                    id_session=self.id_session,
+                    session_id=self.session_id,
                     message=message.content,
                     message_type=message_type
                 )
@@ -134,7 +134,7 @@ class ChatMessageHistory:
                 print(f"[DEBUG] Modelo a guardar: {vars(model_instance)}")
                 db.add(model_instance)
                 db.commit()
-                print(f"[DB] Guardado mensaje en sesión {self.id_session}: {message.content}")
+                print(f"[DB] Guardado mensaje en sesión {self.session_id}: {message.content}")
             except Exception as e:
                 db.rollback()
                 print(f"[ERROR] Fallo al guardar mensaje: {e}")
@@ -150,10 +150,10 @@ class ChatMessageHistory:
         print(f"🤖 Guardando mensaje de la IA: {content}")
         self.add_messages(AIMessage(content=content))
 
-def get_formatted_history(id_session: str, limit: int = 15) -> str:
-    print(f"[DEBUG] Obteniendo historial para id_session={id_session} con límite={limit}")
+def get_formatted_history(session_id: str, limit: int = 15) -> str:
+    print(f"[DEBUG] Obteniendo historial para session_id={session_id} con límite={limit}")
     
-    history = ChatMessageHistory(id_session=id_session, limit=limit)
+    history = ChatMessageHistory(session_id=session_id, limit=limit)
     messages = history.get_messages()
     
     print(f"[DEBUG] Total de mensajes recuperados: {len(messages)}")

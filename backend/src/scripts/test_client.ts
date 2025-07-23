@@ -8,7 +8,7 @@ socket.on('connect', () => {
   // Enviar un mensaje al servidor
   socket.emit('send_message', {
   "message": "Me llamo Roberto Garcia, quisiera averiguar formas de gestionar pedidos de clientes para mi empresa",
-  "id_session": "123124523"
+  "session_id": "123124523"
 });
 });
 

@@ -24,12 +24,12 @@ export class Message {
     @Column({ type: 'text' })
     content!: string;
 
-    @Column({ name: 'chatId' })
-    chatId!: number;
+    @Column({ name: 'chat_id' })
+    chat_id!: number;
 
     // Relación Many-to-One con Chat
     @ManyToOne(() => Chat, (chat: Chat) => chat.messages, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'chatId' })
+    @JoinColumn({ name: 'chat_id' })
     chat!: Chat;
 
 

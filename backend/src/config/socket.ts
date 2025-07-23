@@ -12,14 +12,14 @@ export function configureSocket(io: Server) {
 
     socket.on('send_message', async (data) => {
       try {
-        const { message, id_session } = data;
+        const { message, session_id } = data;
 
-        if (!message || !id_session) {
-          socket.emit('receive_message', '❌ Faltan campos: message o id_session');
+        if (!message || !session_id) {
+          socket.emit('receive_message', '❌ Faltan campos: message o session_id');
           return;
         }
 
-        const response = await pythonCommunication.sendMessageToPython(message, id_session);
+        const response = await pythonCommunication.sendMessageToPython(message, session_id);
         socket.emit('receive_message', response);
       } catch (error) {
         console.error('Error en socket:', error);
@@ -28,6 +28,7 @@ export function configureSocket(io: Server) {
     });
 
     socket.on('generate-summary', async (data) => {
+      console.log("Entrando en generate-summary")
       try {
         const { customer_id } = data;
 
@@ -36,12 +37,13 @@ export function configureSocket(io: Server) {
           return;
         }
 
+        
         const updatedChat = await chatService.updateChatStateByCustomer(customer_id, 0);
 
         socket.emit('summary_result', {
           success: true,
           message: '✅ Resumen generado',
-          chatId: updatedChat.id,
+          chat_id: updatedChat.id,
         });
       } catch (err) {
         console.error('❌ Error al generar resumen por socket:', err);

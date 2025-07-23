@@ -1,14 +1,14 @@
 // backend/src/application/services/pythonCommunication.ts
 
 export class pythonCommunication {
-    static async sendMessageToPython(message: string, id_session: string): Promise<string> {
+    static async sendMessageToPython(message: string, session_id: string): Promise<string> {
         console.log('📤 Enviando mensaje a FastAPI:', message);
 
         try {
             const response = await fetch('http://localhost:8000/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, id_session }),
+                body: JSON.stringify({ message, session_id }),
             });
 
             if (!response.ok) {
@@ -25,14 +25,18 @@ export class pythonCommunication {
     }
 
     // 🆕 Nueva función para resumen
-    static async generateSummary(chatId: number, id_session: string): Promise<string> {
-        console.log('📤 Solicitando resumen a FastAPI para chat:', chatId);
+    static async generateSummary(chat_id: number, session_id: string): Promise<string> {
+        console.log('📤 Solicitando resumen a FastAPI para chat:', chat_id, session_id);
 
         try {
             const response = await fetch('http://localhost:8000/resumen', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chatId, id_session }),
+                body: JSON.stringify({
+                    message: "no se usa",   // 👈 necesario para cumplir el modelo de FastAPI
+                    session_id: session_id,
+                    chat_id: chat_id         // 👈 opcional
+                }),
             });
 
             if (!response.ok) {
@@ -47,4 +51,5 @@ export class pythonCommunication {
             throw error;
         }
     }
+
 }

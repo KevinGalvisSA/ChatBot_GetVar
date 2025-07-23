@@ -1,5 +1,5 @@
 -- Insertar clientes de prueba
-INSERT INTO `customers` (`id`, `name`, `phone_number`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
+INSERT INTO `customers` (`id`, `name`, `phone`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
 (1, 'Laura Gómez',     3011234567, NULL, NULL, NOW(), NOW()),
 (2, 'Carlos Pérez',    3029876543, NULL, NULL, NOW(), NOW()),
 (3, 'Ana Martínez',    3035554321, NULL, NULL, NOW(), NOW()),
@@ -35,7 +35,7 @@ INSERT INTO `chats` (`id`, `id_customer`, `last_connection`, `createdBy`, `updat
 (15, 15,'2025-07-10 16:40:00', NULL, NULL, NOW(), NOW());
 
 -- Insertar mensajes de prueba (tipo 0 = entrante, tipo 1 = saliente)
-INSERT INTO `messages` (`id`, `type`, `content`, `chatId`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
+INSERT INTO `messages` (`id`, `type`, `content`, `chat_id`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
 (1, 0, 'Hola, ¿me pueden ayudar?', 1, NULL, NULL, NOW(), NOW()),
 (2, 1, '¡Claro! ¿En qué necesitas ayuda?', 1, NULL, NULL, NOW(), NOW()),
 (3, 0, 'No encuentro mi pedido', 2, NULL, NULL, NOW(), NOW()),

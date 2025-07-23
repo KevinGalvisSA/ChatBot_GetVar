@@ -2,15 +2,15 @@ from app.domain.model.customer import Customer
 from app.infrastructure.sql.setupDB import SessionLocal
 from datetime import datetime
 
-def get_or_create_customer(name: str, phone_number_number: int) -> Customer | None:
+def get_or_create_customer(name: str, phone: int) -> Customer | None:
     db = SessionLocal()
     try:
-        customer = db.query(Customer).filter_by(phone_number_number=phone_number_number).first()
+        customer = db.query(Customer).filter_by(phone=phone).first()
         if not customer:
             now = datetime.now()
             customer = Customer(
                 name=name,
-                phone_number_number=phone_number_number,
+                phone=phone,
                 createdBy=0,
                 updatedBy=0,
                 createdAt=now,

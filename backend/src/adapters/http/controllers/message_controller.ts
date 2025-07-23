@@ -17,14 +17,14 @@ export class MessageController {
         }
     }
 
-    static async getByChatId(req: Request, res: Response) {
+    static async getBychat_id(req: Request, res: Response) {
         try {
-            const chatId = parseInt(req.params.chatId);
-            if (isNaN(chatId)) {
+            const chat_id = parseInt(req.params.chat_id);
+            if (isNaN(chat_id)) {
                 return ApiResponse.badRequest(res, 'Chat ID inválido');
             }
 
-            const messages = await messageService.getMessagesByChat(chatId);
+            const messages = await messageService.getMessagesByChat(chat_id);
             return ApiResponse.success(res, 'Mensajes del chat obtenidos correctamente', messages);
         } catch (error) {
             return ApiResponse.error(res, error);

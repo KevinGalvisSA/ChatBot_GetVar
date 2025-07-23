@@ -22,7 +22,7 @@ export class MessageStorage {
   @JoinColumn({ name: 'id_customer' })  // clave foránea explícita
   customer!: Customer;
 
-  @Column({ name: 'id_session', type: 'bigint' })
+  @Column({ name: 'session_id', type: 'bigint' })
   session_id!: number;
 
   @Column({ type: 'text' })

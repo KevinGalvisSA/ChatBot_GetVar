@@ -16,7 +16,7 @@ export class SummaryRepository {
         return await this.repo.save(resumen);
     }
 
-    async findByChatId(chatId: number): Promise<Summary[]> {
-        return await this.repo.find({ where: { chatId } });
+    async findBychat_id(chat_id: number): Promise<Summary[]> {
+        return await this.repo.find({ where: { chat_id } });
     }
 }

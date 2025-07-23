@@ -1,5 +1,5 @@
 -- Insertar clientes de prueba
-INSERT INTO `customers` (`id`, `name`, `phone`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
+INSERT INTO `customers` (`id`, `name`, `phone_number`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
 (1, 'Laura Gómez',     3011234567, NULL, NULL, NOW(), NOW()),
 (2, 'Carlos Pérez',    3029876543, NULL, NULL, NOW(), NOW()),
 (3, 'Ana Martínez',    3035554321, NULL, NULL, NOW(), NOW()),
@@ -17,7 +17,7 @@ INSERT INTO `customers` (`id`, `name`, `phone`, `createdBy`, `updatedBy`, `creat
 (15, 'David Ortiz',    3159090808, NULL, NULL, NOW(), NOW());
 
 -- Insertar chats de prueba (cada uno ligado a un cliente)
-INSERT INTO `chats` (`id`, `customerId`, `lastConnection`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
+INSERT INTO `chats` (`id`, `id_customer`, `last_connection`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`) VALUES
 (1, 1,  '2025-07-15 08:00:00', NULL, NULL, NOW(), NOW()),
 (2, 2,  '2025-07-14 15:30:00', NULL, NULL, NOW(), NOW()),
 (3, 3,  '2025-07-13 18:45:00', NULL, NULL, NOW(), NOW()),
@@ -53,7 +53,7 @@ INSERT INTO `messages` (`id`, `type`, `content`, `chatId`, `createdBy`, `updated
 (15,0, '¿Cuánto demora el envío?', 8, NULL, NULL, NOW(), NOW());
 
 -- Insertar mensajes almacenados (historial o log)
-INSERT INTO `messageStorages` (`id`, `sessionId`, `message`, `customerId`) VALUES
+INSERT INTO `messageStorages` (`id`, `session_id`, `message`, `id_customer`) VALUES
 (1, 3011234567, 'Histórico: Hola, ¿me pueden ayudar?', 1),
 (2, 3029876543, 'Histórico: No encuentro mi pedido', 2),
 (3, 3035554321, 'Histórico: Quiero cambiar mi dirección', 3),

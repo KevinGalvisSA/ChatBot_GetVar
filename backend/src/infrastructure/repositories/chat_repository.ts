@@ -14,8 +14,8 @@ export class ChatRepository {
     return await this.repo.findOne({ where: { id }, relations: ['customer'] });
   }
 
-  async findByCustomerId(customerId: number): Promise<Chat | null> {
-    return await this.repo.findOne({ where: { customerId } });
+  async findByid_customer(id_customer: number): Promise<Chat | null> {
+    return await this.repo.findOne({ where: { id_customer } });
   }
 
   async create(chatData: Partial<Chat>): Promise<Chat> {

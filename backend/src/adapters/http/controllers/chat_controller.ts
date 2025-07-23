@@ -9,12 +9,12 @@ const chatService = new ChatService();
 export class ChatController {
     static async createIfNotExists(req: Request, res: Response) {
         try {
-            const { customerId } = req.body;
-            if (!customerId || isNaN(Number(customerId))) {
-                return ApiResponse.badRequest(res, 'customerId inválido o faltante');
+            const { id_customer } = req.body;
+            if (!id_customer || isNaN(Number(id_customer))) {
+                return ApiResponse.badRequest(res, 'id_customer inválido o faltante');
             }
 
-            const chat = await chatService.createChatIfNotExists(Number(customerId));
+            const chat = await chatService.createChatIfNotExists(Number(id_customer));
             return ApiResponse.success(res, 'Chat obtenido o creado correctamente', chat);
         } catch (error) {
             return ApiResponse.error(res, error);
@@ -33,12 +33,12 @@ export class ChatController {
         }
     }
 
-    static async getByCustomerId(req: Request, res: Response) {
+    static async getByid_customer(req: Request, res: Response) {
         try {
-            const customerId = parseInt(req.params.customerId);
-            if (isNaN(customerId)) return ApiResponse.badRequest(res, 'ID de cliente inválido');
+            const id_customer = parseInt(req.params.id_customer);
+            if (isNaN(id_customer)) return ApiResponse.badRequest(res, 'ID de cliente inválido');
 
-            const chat = await chatService.getChatByCustomerId(customerId);
+            const chat = await chatService.getChatByid_customer(id_customer);
             return ApiResponse.success(res, 'Chat del cliente obtenido correctamente', chat);
         } catch (error) {
             return ApiResponse.error(res, error);
@@ -79,7 +79,7 @@ export class ChatController {
                 return ApiResponse.success(res, 'El estado ya está establecido en ese valor', chat);
             }
 
-            const updatedChat = await chatService.updateChatState(id, state);
+            const updatedChat = await chatService.updateChatStateByCustomer(id, state);
             return ApiResponse.success(res, 'Estado actualizado correctamente', updatedChat);
         } catch (error) {
             return ApiResponse.error(res, error);

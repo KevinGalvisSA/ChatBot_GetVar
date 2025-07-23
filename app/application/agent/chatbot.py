@@ -1,6 +1,6 @@
 from app.infrastructure.factories.qdrant import QdrantService
 from app.infrastructure.factories.gemini_integration import answer_with_gemini
-from app.infrastructure.sql.setupDB import ChatMessageHistory, get_customer_by_phone
+from app.infrastructure.sql.setupDB import ChatMessageHistory, get_customer_by_phone_number
 from app.infrastructure.sql.message_saver import save_message
 from app.infrastructure.factories.extract_info import InfoExtractor
 from app.config.bot_regulations import BotRegulations
@@ -22,24 +22,24 @@ qdrant_service = QdrantService(
 
 extractor = InfoExtractor()
 
-def chat_with_bot(user_input: str, session_id: str) -> str:
+def chat_with_bot(user_input: str, id_session: str) -> str:
     # Extraer información del usuario (nombre y teléfono)
     extracted_info = extractor.extract(user_input)
     name = extracted_info.get("name")
-    phone = extracted_info.get("phone")
+    phone_number = extracted_info.get("phone_number")
 
     if name:
         BotRegulations.user_input["name"] = name
-    if phone:
-        BotRegulations.user_input["phone"] = phone
+    if phone_number:
+        BotRegulations.user_input["phone_number"] = phone_number
 
     name_known = BotRegulations.user_input.get("name")
-    phone_known = BotRegulations.user_input.get("phone")
-    phone_num = int(phone_known) if phone_known else 0
+    phone_number_known = BotRegulations.user_input.get("phone_number")
+    phone_number_num = int(phone_number_known) if phone_number_known else 0
 
     # Obtener o crear cliente
     try:
-        customer = get_or_create_customer(name=name_known, phone_number=phone_num) # type: ignore
+        customer = get_or_create_customer(name=name_known, phone_number_number=phone_number_num) # type: ignore
         id_customer = customer.id if customer else 0
     except Exception as e:
         print(f"❌ Error en get_or_create_customer: {e}")
@@ -56,7 +56,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 # Obtener respuesta desde Gemini usando historial de mensajes
     try:
         # 1️⃣ Recuperar historial desde la base de datos
-        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer) # type: ignore
+        chat_history = ChatMessageHistory(id_session=id_session, id_customer=id_customer) # type: ignore
         messages = chat_history.get_messages()
 
     # 2️⃣ Formatear el historial como texto plano
@@ -77,26 +77,26 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
     # Guardar mensajes en la base de datos
     try:
-        save_message(id_customer=id_customer, session_id=int(session_id), content=user_input, message_type="human") # type: ignore
-        save_message(id_customer=id_customer, session_id=int(session_id), content=response, message_type="ai") # type: ignore
+        save_message(id_customer=id_customer, id_session=int(id_session), content=user_input, message_type="human") # type: ignore
+        save_message(id_customer=id_customer, id_session=int(id_session), content=response, message_type="ai") # type: ignore
     except Exception as e:
         print(f"❌ Error guardando en messageStorage: {e}")
 
     return response
 
-def generate_chat_summary(session_id: str) -> str:
+def generate_chat_summary(id_session: str) -> str:
     try:
         # Obtener número como int
-        phone_number = int(session_id)
+        phone_number_number = int(id_session)
 
         # Validar cliente
-        customer = get_customer_by_phone(phone_number)
+        customer = get_customer_by_phone_number(phone_number_number)
         if not customer:
             return "❌ No se encontró un cliente con ese número."
 
         # Historial del cliente
         history = ChatMessageHistory(
-            session_id=session_id,
+            id_session=id_session,
             id_customer=customer.id  # type: ignore si es necesario
         )
 

@@ -8,7 +8,7 @@ class InfoExtractor:
         """
         self.patterns = {
             'name': r"(?:mi\s+nombre\s+es|nombre\s*[:\-]?|me\s+llamo|soy)\s+([A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ]+){0,2})",
-            'phone': r"(?:n[uú]mero\s+de\s+tel[eé]fono\s+es|tel[eé]fono\s*[:\-]?|contactarme\s+al|celular\s*[:\-]?|ll[aá]mame\s+al)?\s*(\+?\d[\d\s\-]{6,15})"
+            'phone_number': r"(?:n[uú]mero\s+de\s+tel[eé]fono\s+es|tel[eé]fono\s*[:\-]?|contactarme\s+al|celular\s*[:\-]?|ll[aá]mame\s+al)?\s*(\+?\d[\d\s\-]{6,15})"
         }
 
     def extract(self, text: str) -> Dict[str, Optional[str]]:
@@ -19,11 +19,11 @@ class InfoExtractor:
         - text (str): Entrada del usuario.
         
         Returns:
-        - dict: Con las claves 'name' y 'phone', si fueron encontrados.
+        - dict: Con las claves 'name' y 'phone_number', si fueron encontrados.
         """
         extracted_info: Dict[str, Optional[str]] = {
             'name': None,
-            'phone': None
+            'phone_number': None
         }
 
         # Buscar nombre
@@ -32,9 +32,9 @@ class InfoExtractor:
             extracted_info['name'] = name_match.group(1).strip()
 
         # Buscar teléfono
-        phone_match = re.search(self.patterns['phone'], text, re.IGNORECASE)
-        if phone_match:
-            extracted_info['phone'] = re.sub(r"[^\d+]", "", phone_match.group(1).strip())
+        phone_number_match = re.search(self.patterns['phone_number'], text, re.IGNORECASE)
+        if phone_number_match:
+            extracted_info['phone_number'] = re.sub(r"[^\d+]", "", phone_number_match.group(1).strip())
 
         return extracted_info
 
@@ -51,7 +51,7 @@ class InfoExtractor:
         missing = []
         if not extracted_info['name']:
             missing.append("tu nombre")
-        if not extracted_info['phone']:
+        if not extracted_info['phone_number']:
             missing.append("tu número de teléfono")
 
         if missing:

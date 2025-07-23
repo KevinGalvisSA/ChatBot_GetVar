@@ -1,23 +1,29 @@
 import { Chat } from '../../domain/entities/chat_entity';
 import { ChatRepository } from '../../infrastructure/repositories/chat_repository';
-import axios from 'axios';
+import { SummaryRepository } from '../../infrastructure/repositories/summary_repository';
+import { CustomerRepository } from '../../infrastructure/repositories/customer_repository'; 
+import { pythonCommunication } from './pythonCommunication';
 
 export class ChatService {
     private chatRepository: ChatRepository;
+    private resumenRepository: SummaryRepository;
+    private customerRepository: CustomerRepository;
 
     constructor() {
         this.chatRepository = new ChatRepository();
+        this.resumenRepository = new SummaryRepository();
+        this.customerRepository = new CustomerRepository(); 
     }
 
-    async createChatIfNotExists(customerId: number): Promise<Chat> {
-        const existing = await this.chatRepository.findByCustomerId(customerId);
+    async createChatIfNotExists(id_customer: number): Promise<Chat> {
+        const existing = await this.chatRepository.findByid_customer(id_customer);
         if (existing) return existing;
 
         const chat = await this.chatRepository.create({
-            customerId,
-            lastConnection: new Date(),
-            createdBy: customerId,
-            updatedBy: customerId,
+            id_customer,
+            last_connection: new Date(),
+            createdBy: id_customer,
+            updatedBy: id_customer,
         });
 
         return chat;
@@ -29,8 +35,8 @@ export class ChatService {
         return chat;
     }
 
-    async getChatByCustomerId(customerId: number): Promise<Chat> {
-        const chat = await this.chatRepository.findByCustomerId(customerId);
+    async getChatByid_customer(id_customer: number): Promise<Chat> {
+        const chat = await this.chatRepository.findByid_customer(id_customer);
         if (!chat) throw new Error('El cliente no tiene un chat asociado');
         return chat;
     }
@@ -47,32 +53,41 @@ export class ChatService {
         return await this.chatRepository.findAll();
     }
 
-    // 🆕 NUEVA FUNCIÓN: actualizar solo el estado y generar resumen si se pone inactivo
-    async updateChatState(id: number, newState: number): Promise<Chat> {
-        const chat = await this.chatRepository.findById(id);
-        if (!chat) throw new Error('Chat no encontrado');
+    async updateChatStateByCustomer(id_customer: number, newState: number): Promise<Chat> {
+        const chat = await this.chatRepository.findByid_customer(id_customer);
+        if (!chat) throw new Error('Chat no encontrado para este cliente');
 
-        // Si ya está en el mismo estado, no hacemos nada
         if (chat.state === newState) return chat;
 
-        const updatedChat = await this.chatRepository.updateState(id, newState);
+        const updatedChat = await this.chatRepository.updateState(chat.id, newState);
 
         if (newState === 0) {
             try {
-                const resumenResponse = await axios.get(
-                    `http://localhost:8000/chat`
-                );
-                const resumen = resumenResponse.data;
-                console.log('📝 Resumen generado:', resumen);
+                const customer = await this.customerRepository.findById(id_customer); 
+                if (!customer) throw new Error('Cliente no encontrado');
 
-                // Puedes guardar el resumen si tienes una tabla/resumen_entity
-                // o enviarlo por socket, etc.
+                const id_session = customer.phone_number.toString(); 
 
+                const resumen = await pythonCommunication.generateSummary(chat.id, id_session);
+
+                await this.resumenRepository.create({
+                    id_session: customer.phone_number,
+                    chatId: chat.id,
+                    message: resumen,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                });
+
+                console.log('✅ Resumen guardado en base de datos');
             } catch (error) {
-                console.error('❌ Error al solicitar resumen al bot:', error);
+                console.error('❌ Error al generar o guardar resumen:', error);
             }
         }
 
         return updatedChat;
+    }
+
+    async getResumesByChat(chatId: number) {
+        return await this.resumenRepository.findByChatId(chatId);
     }
 }

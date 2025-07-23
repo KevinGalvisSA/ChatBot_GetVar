@@ -17,7 +17,7 @@ export class Customer {
     name!: string;
 
     @Column({ type: 'bigint', unique: true })
-    phone!: number;
+    phone_number!: number;
 
     @Column({ type: 'int', nullable: true })
     createdBy!: number;

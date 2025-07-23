@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test_connection": "ts-node src/config/data-source.ts",
     "main": "ts-node src/main.ts",
-    "test_client": "ts-node test_client.ts"
+    "test_client": "ts-node src/scripts/test_client.ts",
+    "test_summary": "ts-node src/scripts/test_summary.ts"
   },
   "keywords": [],
   "author": "",

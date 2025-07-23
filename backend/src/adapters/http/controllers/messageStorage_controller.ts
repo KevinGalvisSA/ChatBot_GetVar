@@ -17,14 +17,14 @@ export class MessageStorageController {
         }
     }
 
-    static async getByCustomerId(req: Request, res: Response) {
+    static async getByid_customer(req: Request, res: Response) {
         try {
-            const customerId = parseInt(req.params.customerId);
-            if (isNaN(customerId)) {
+            const id_customer = parseInt(req.params.id_customer);
+            if (isNaN(id_customer)) {
                 return ApiResponse.badRequest(res, 'ID de cliente inválido');
             }
 
-            const message = await messageStorageService.getByCustomerId(customerId);
+            const message = await messageStorageService.getByid_customer(id_customer);
             if (!message) {
                 return ApiResponse.notFound(res, 'Mensaje no encontrado para el cliente');
             }
@@ -35,14 +35,14 @@ export class MessageStorageController {
         }
     }
 
-    static async getBySessionId(req: Request, res: Response) {
+    static async getBysession_id(req: Request, res: Response) {
         try {
-            const sessionId = parseInt(req.params.sessionId);
-            if (isNaN(sessionId)) {
+            const session_id = parseInt(req.params.session_id);
+            if (isNaN(session_id)) {
                 return ApiResponse.badRequest(res, 'Session ID inválido');
             }
 
-            const message = await messageStorageService.getBySessionId(sessionId);
+            const message = await messageStorageService.getBysession_id(session_id);
             if (!message) {
                 return ApiResponse.notFound(res, 'Mensaje no encontrado para la sesión');
             }
@@ -53,14 +53,14 @@ export class MessageStorageController {
         }
     }
 
-    static async deleteByCustomerId(req: Request, res: Response) {
+    static async deleteByid_customer(req: Request, res: Response) {
         try {
-            const customerId = parseInt(req.params.customerId);
-            if (isNaN(customerId)) {
+            const id_customer = parseInt(req.params.id_customer);
+            if (isNaN(id_customer)) {
                 return ApiResponse.badRequest(res, 'ID de cliente inválido');
             }
 
-            const deleted = await messageStorageService.deleteByCustomerId(customerId);
+            const deleted = await messageStorageService.deleteByid_customer(id_customer);
             if (!deleted) {
                 return ApiResponse.notFound(res, 'No se encontró un mensaje para eliminar');
             }

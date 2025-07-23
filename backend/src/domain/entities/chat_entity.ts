@@ -19,17 +19,17 @@ export class Chat {
     id!: number;
 
     @Column()
-    customerId!: number;
+    id_customer!: number;
 
     @OneToOne(() => Customer)
-    @JoinColumn({ name: 'customerId' })
+    @JoinColumn({ name: 'id_customer' })
     customer!: Customer;
 
     @OneToMany(() => Message, (message) => message.chat)
     messages!: Message[];
 
     @Column({ type: 'datetime' })
-    lastConnection!: Date;
+    last_connection!: Date;
 
     @Column({ type: 'int', nullable: true })
     createdBy!: number;

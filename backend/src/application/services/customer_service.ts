@@ -10,11 +10,11 @@ export class CustomerService {
         this.customerRepository = new CustomerRepository();
     }
 
-    async getOrCreateCustomer(name: string, phone: number): Promise<Customer> {
-        const existing = await this.customerRepository.findByPhone(phone);
+    async getOrCreateCustomer(name: string, phone_number: number): Promise<Customer> {
+        const existing = await this.customerRepository.findByphone_number(phone_number);
         if (existing) return existing;
 
-        return await this.customerRepository.create({ name, phone });
+        return await this.customerRepository.create({ name, phone_number });
     }
 
     async updateCustomer(id: number, data: Partial<Customer>): Promise<Customer | null> {
@@ -29,8 +29,8 @@ export class CustomerService {
         return await this.customerRepository.findById(id);
     }
 
-    async getCustomerByPhone(phone: number): Promise<Customer | null> {
-        return await this.customerRepository.findByPhone(phone);
+    async getCustomerByphone_number(phone_number: number): Promise<Customer | null> {
+        return await this.customerRepository.findByphone_number(phone_number);
     }
 }
 

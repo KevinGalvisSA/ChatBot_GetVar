@@ -11,11 +11,11 @@ export class MessageStorageService {
   }
 
   async createStorageMessage(data: Partial<MessageStorage>): Promise<MessageStorage> {
-    if (!data.customer || !data.customerId) {
+    if (!data.customer || !data.id_customer) {
       throw new Error('Customer relation is required.');
     }
 
-    if (!data.sessionId) {
+    if (!data.session_id) {
       throw new Error('Session ID is required.');
     }
 
@@ -23,22 +23,22 @@ export class MessageStorageService {
       throw new Error('Message content cannot be empty.');
     }
 
-    if (!data.messageType) {
+    if (!data.message_type) {
       throw new Error('Message type is required.');
     }
 
     return await this.messageStorageRepository.create(data);
   }
 
-  async getByCustomerId(customerId: number): Promise<MessageStorage | null> {
-    return await this.messageStorageRepository.findByCustomerId(customerId);
+  async getByid_customer(id_customer: number): Promise<MessageStorage | null> {
+    return await this.messageStorageRepository.findByid_customer(id_customer);
   }
 
-  async getBySessionId(sessionId: number): Promise<MessageStorage | null> {
-    return await this.messageStorageRepository.findBySessionId(sessionId);
+  async getBysession_id(session_id: number): Promise<MessageStorage | null> {
+    return await this.messageStorageRepository.findBysession_id(session_id);
   }
 
-  async deleteByCustomerId(customerId: number): Promise<boolean> {
-    return await this.messageStorageRepository.deleteByCustomerId(customerId);
+  async deleteByid_customer(id_customer: number): Promise<boolean> {
+    return await this.messageStorageRepository.deleteByid_customer(id_customer);
   }
 }

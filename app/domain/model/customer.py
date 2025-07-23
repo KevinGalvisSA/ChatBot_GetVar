@@ -10,7 +10,7 @@ class Customer(Base):
 
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
-    phone_number = Column(BigInteger, nullable=False)
+    phone_number_number = Column(BigInteger, nullable=False)
     createdBy = Column(INTEGER)
     updatedBy = Column(INTEGER)
     createdAt = Column(TIMESTAMP, nullable=False)
@@ -18,4 +18,4 @@ class Customer(Base):
 
 
     def __repr__(self):
-        return f"<Customer(id={self.id}, name='{self.name}', phone='{self.phone}')>"
+        return f"<Customer(id={self.id}, name='{self.name}', phone_number='{self.phone_number}')>"

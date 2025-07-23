@@ -16,22 +16,22 @@ export class MessageStorageRepository {
         return await this.repository.save(storage);
     }
 
-    async findByCustomerId(customerId: number): Promise<MessageStorage | null> {
+    async findByid_customer(id_customer: number): Promise<MessageStorage | null> {
         return await this.repository.findOne({
-            where: { customerId },
+            where: { id_customer },
             relations: ['customer'],
         });
     }
 
-    async findBySessionId(sessionId: number): Promise<MessageStorage | null> {
+    async findBysession_id(session_id: number): Promise<MessageStorage | null> {
         return await this.repository.findOne({
-            where: { sessionId },
+            where: { session_id },
             relations: ['customer'],
         });
     }
 
-    async deleteByCustomerId(customerId: number): Promise<boolean> {
-        const result = await this.repository.delete({ customerId });
+    async deleteByid_customer(id_customer: number): Promise<boolean> {
+        const result = await this.repository.delete({ id_customer });
         return result.affected !== 0;
     }
 

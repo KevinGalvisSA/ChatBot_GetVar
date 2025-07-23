@@ -16,21 +16,18 @@ export class MessageStorage {
   id!: number;
 
   @Column({ name: 'id_customer' })
-  customerId!: number;
+  id_customer!: number;
 
   @OneToOne(() => Customer)
   @JoinColumn({ name: 'id_customer' })  // clave foránea explícita
   customer!: Customer;
 
-  @Column({ name: 'session_id', type: 'bigint' })
-  sessionId!: number;
+  @Column({ name: 'id_session', type: 'bigint' })
+  session_id!: number;
 
   @Column({ type: 'text' })
   message!: string;
 
   @Column({ name: 'message_type', type: 'varchar', length: 50 })
-  messageType!: string;
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  createdAt!: Date;
+  message_type!: string;
 }

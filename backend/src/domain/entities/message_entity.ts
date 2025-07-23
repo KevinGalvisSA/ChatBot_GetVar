@@ -24,6 +24,9 @@ export class Message {
     @Column({ type: 'text' })
     content!: string;
 
+    @Column({ name: 'chatId' })
+    chatId!: number;
+
     // Relación Many-to-One con Chat
     @ManyToOne(() => Chat, (chat: Chat) => chat.messages, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'chatId' })

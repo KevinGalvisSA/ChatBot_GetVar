@@ -1,41 +1,29 @@
-import re
 from app.domain.model.customer import Customer
 from app.infrastructure.sql.setupDB import SessionLocal
 from datetime import datetime
 
-def is_valid_name(name: str) -> bool:
-    return bool(name.strip())
-
-def is_valid_phone(phone: str | int) -> bool:
-    return bool(re.fullmatch(r"\d{7,15}", str(phone)))
-
-def get_customer_if_valid(name: str, phone: str | int) -> Customer | None:
-    """
-    Retorna un cliente existente si el nombre y teléfono son válidos y el cliente ya está registrado.
-    """
-    if not is_valid_name(name):
-        print("❌ Nombre inválido.")
-        return None
-    if not is_valid_phone(phone):
-        print("❌ Teléfono inválido.")
-        return None
-
+def get_or_create_customer(name: str, phone: int) -> Customer:
+    print(f"🔍 [get_or_create_customer] Buscando o creando cliente ➜ name: {name}, phone: {phone}")
+    
+    session = SessionLocal()
     try:
-        phone = int(phone)
-    except ValueError:
-        print("❌ Teléfono no es un número válido.")
-        return None
+        customer = session.query(Customer).filter(Customer.phone == phone).first()
 
-    db = SessionLocal()
-    try:
-        customer = db.query(Customer).filter_by(phone=phone).first()
         if customer:
+            print(f"✅ Cliente encontrado ➜ ID: {customer.id}, Nombre: {customer.name}, Teléfono: {customer.phone}")
             return customer
-        else:
-            print("⚠️ Cliente no encontrado.")
-            return None
+
+        # Crear nuevo cliente
+        new_customer = Customer(name=name or "Sin nombre", phone=phone)
+        session.add(new_customer)
+        session.commit()
+        session.refresh(new_customer)
+
+        print(f"🆕 Cliente creado ➜ ID: {new_customer.id}, Nombre: {new_customer.name}, Teléfono: {new_customer.phone}")
+        return new_customer
     except Exception as e:
-        print(f"❌ Error al buscar cliente: {e}")
-        return None
+        print(f"❌ Error en get_or_create_customer: {e}")
+        session.rollback()
+        raise e
     finally:
-        db.close()
+        session.close()

@@ -24,12 +24,12 @@ export class Message {
     @Column({ type: 'text' })
     content!: string;
 
-    @Column({ name: 'chat_id' })
-    chat_id!: number;
+    @Column({ name: 'chatID' })
+    chatID!: number;
 
     // Relación Many-to-One con Chat
     @ManyToOne(() => Chat, (chat: Chat) => chat.messages, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'chat_id' })
+    @JoinColumn({ name: 'chatID' })
     chat!: Chat;
 
 
@@ -39,9 +39,9 @@ export class Message {
     @Column({ type: 'int', nullable: true })
     updatedBy!: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
 }

@@ -11,6 +11,8 @@ import messageRoutes from './adapters/http/routes/message_routes';
 import customerRoutes from './adapters/http/routes/customer_routes';
 import chatRoutes from './adapters/http/routes/chat_routes';
 import messageStorageRoutes from './adapters/http/routes/messageStorage_routes';
+import webhookRoutes from './adapters/http/routes/webhook_routes';
+
 
 const app = express();
 app.use(express.json());
@@ -26,6 +28,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/message-storage', messageStorageRoutes);
+app.use('/webhook', webhookRoutes);
 
 // Ruta de prueba para errores
 app.get('/error-test', (req, res) => {

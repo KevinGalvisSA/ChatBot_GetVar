@@ -35,9 +35,9 @@ export class Summary {
     @Column({ type: 'mediumint', unsigned: true, nullable: true })
     updatedBy!: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
 }

@@ -56,6 +56,11 @@ export class ChatService {
         return await this.chatRepository.findAll();
     }
 
+    async getChatsInactiveForMinutes(minutes: number): Promise<Chat[]> {
+        const threshold = new Date(Date.now() - minutes * 60 * 1000);
+        return await this.chatRepository.getInactiveSince(threshold);
+    }
+
     async handleUserMessageAndResponse(
         id_customer: number,
         userMessage: string,
@@ -136,7 +141,6 @@ export class ChatService {
 
         return updatedChat;
     }
-
 
     async getResumesByChat(chat_id: number) {
         return await this.resumenRepository.findBychat_id(chat_id);

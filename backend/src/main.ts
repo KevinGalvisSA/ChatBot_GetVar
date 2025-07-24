@@ -55,6 +55,9 @@ const PORT = process.env.PORT || 4000;
 
 AppDataSource.initialize()
   .then(() => {
+    // 👇 Activar cron de cierre automático
+    import('./cron/inactiveChatCron');
+
     server.listen(PORT, () => {
       console.log(`🚀 Servidor backend escuchando en http://localhost:${PORT}`);
     });

@@ -40,9 +40,9 @@ export class Chat {
     @Column({ type: 'tinyint' })
     state!: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
 }

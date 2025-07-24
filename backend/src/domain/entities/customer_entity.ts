@@ -25,9 +25,9 @@ export class Customer {
     @Column({ type: 'int', nullable: true })
     updatedBy!: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp' })
     createdAt!: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamp' })
     updatedAt!: Date;
 }

@@ -3,13 +3,16 @@ import { ChatRepository } from '../../infrastructure/repositories/chat_repositor
 import { SummaryRepository } from '../../infrastructure/repositories/summary_repository';
 import { CustomerRepository } from '../../infrastructure/repositories/customer_repository';
 import { pythonCommunication } from './pythonCommunication';
+import { MessageService } from './message_service';
 
 export class ChatService {
+    private messageService: MessageService;
     private chatRepository: ChatRepository;
     private resumenRepository: SummaryRepository;
     private customerRepository: CustomerRepository;
 
     constructor() {
+        this.messageService = new MessageService();
         this.chatRepository = new ChatRepository();
         this.resumenRepository = new SummaryRepository();
         this.customerRepository = new CustomerRepository();
@@ -52,6 +55,42 @@ export class ChatService {
     async listChats(): Promise<Chat[]> {
         return await this.chatRepository.findAll();
     }
+
+    async handleUserMessageAndResponse(
+        id_customer: number,
+        userMessage: string,
+        messageService: MessageService
+    ): Promise<string> {
+        const customer = await this.customerRepository.findById(id_customer);
+        if (!customer) throw new Error('Cliente no encontrado');
+
+        const chat = await this.createChatIfNotExists(id_customer);
+        const session_id = customer.phone.toString();
+
+        // Guardar mensaje del usuario
+        await this.messageService.createMessage({
+            content: userMessage,
+            type: 0,
+            chat,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        // Obtener respuesta del bot
+        const botResponse = await pythonCommunication.sendMessageToPython(userMessage, session_id);
+
+        // Guardar respuesta del bot
+        await messageService.createMessage({
+            content: botResponse,
+            type: 1,
+            chat,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        return botResponse;
+    }
+
 
     async updateChatStateByCustomer(id_customer: number, newState: number): Promise<Chat> {
         console.log('🔍 updateChatStateByCustomer llamado con:', id_customer, newState);

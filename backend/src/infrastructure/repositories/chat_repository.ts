@@ -1,7 +1,7 @@
 // backend/src/domain/repositories/chat_repository.ts
 import { AppDataSource } from '../../config/data_source';
 import { Chat } from '../..//domain/entities/chat_entity';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 
 export class ChatRepository {
   private repo: Repository<Chat>;
@@ -17,6 +17,16 @@ export class ChatRepository {
   async findByid_customer(id_customer: number): Promise<Chat | null> {
     return await this.repo.findOne({ where: { id_customer } });
   }
+
+  async getInactiveSince(threshold: Date): Promise<Chat[]> {
+    return await this.repo.find({
+      where: {
+        state: 1,
+        last_connection: LessThan(threshold),
+      },
+    });
+  }
+
 
   async create(chatData: Partial<Chat>): Promise<Chat> {
     const newChat = this.repo.create(chatData);

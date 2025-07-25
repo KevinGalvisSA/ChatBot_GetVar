@@ -23,66 +23,79 @@ qdrant_service = QdrantService(
 extractor = InfoExtractor()
 
 def chat_with_bot(user_input: str, session_id: str) -> str:
-    # Extraer información del usuario (nombre y teléfono)
+    print("📥 Iniciando chat_with_bot")
+    print(f"📝 Entrada del usuario: {user_input}")
+    print(f"🆔 session_id: {session_id}")
+
+    # 1️⃣ Extraer nombre y teléfono del texto
     extracted_info = extractor.extract(user_input)
     name = extracted_info.get("name")
     phone = extracted_info.get("phone")
+
+    print(f"🔍 Extraído ➜ nombre: {name}, teléfono: {phone}")
 
     if name:
         BotRegulations.user_input["name"] = name
     if phone:
         BotRegulations.user_input["phone"] = phone
 
+    # 2️⃣ Obtener valores conocidos
     name_known = BotRegulations.user_input.get("name")
     phone_known = BotRegulations.user_input.get("phone")
-    phone_num = int(phone_known) if phone_known else 0
 
-    # Obtener o crear cliente
-    try:
-        customer = get_or_create_customer(name=name_known, phone=phone_num) # type: ignore
-        id_customer = customer.id if customer else 0
-    except Exception as e:
-        print(f"❌ Error en get_or_create_customer: {e}")
-        id_customer = 0
+    # 3️⃣ Fallback: usar session_id como teléfono si no se extrajo
+    if not phone_known and session_id.isdigit():
+        print(f"📲 Usando session_id como fallback de teléfono: {session_id}")
+        phone_known = session_id
 
-    # Buscar contexto en Qdrant
+    print(f"📌 Datos finales ➜ nombre: {name_known}, teléfono: {phone_known}")
+
+    # 4️⃣ Buscar o crear cliente (solo si hay teléfono válido)
+    id_customer = 0
+    if phone_known:
+        try:
+            phone_num = int(phone_known)
+            print(f"🔍 Buscando o creando cliente con teléfono: {phone_num}")
+            customer = get_or_create_customer(name=name_known, phone=phone_num)
+            id_customer = customer.id if customer else 0
+        except Exception as e:
+            print(f"❌ Error en get_or_create_customer: {e}")
+    else:
+        print("⚠️ Teléfono no válido. Cliente no será creado.")
+
+    # 5️⃣ Buscar contexto en Qdrant
     try:
         context_chunks = qdrant_service.search(user_input)
     except Exception as e:
         print(f"❌ Error en búsqueda Qdrant: {e}")
         context_chunks = []
 
-    # Obtener respuesta desde Gemini (⚠️ aquí corregimos el keyword argument)
-# Obtener respuesta desde Gemini usando historial de mensajes
+    # 6️⃣ Generar respuesta desde Gemini con historial
     try:
-        # 1️⃣ Recuperar historial desde la base de datos
-        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer) # type: ignore
+        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer)
         messages = chat_history.get_messages()
 
-    # 2️⃣ Formatear el historial como texto plano
         formatted_history = "\n".join([
-        f"Usuario: {m.content}" if m.type == "human" else f"Bot: {m.content}"
-        for m in messages
+            f"Usuario: {m.content}" if m.type == "human" else f"Bot: {m.content}"
+            for m in messages
         ])
 
-    # 3️⃣ Combinar historial + input actual
         prompt_con_historial = f"{formatted_history}\nUsuario: {user_input}"
-
-    # 4️⃣ Enviar a Gemini como una sola entrada
         response = answer_with_gemini(question=prompt_con_historial, chunks=context_chunks)
 
     except Exception as e:
+        print(f"❌ Error usando Gemini: {e}")
         response = f"❌ Error al usar el Gemini: {str(e)}"
 
-
-    # Guardar mensajes en la base de datos
+    # 7️⃣ Guardar mensajes en base de datos
     try:
-        save_message(id_customer=id_customer, session_id=int(session_id), content=user_input, message_type="human") # type: ignore
-        save_message(id_customer=id_customer, session_id=int(session_id), content=response, message_type="ai") # type: ignore
+        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=user_input, message_type="human") # type: ignore
+        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=response, message_type="ai") # type: ignore
     except Exception as e:
-        print(f"❌ Error guardando en messageStorage: {e}")
+        print(f"❌ Error guardando mensajes: {e}")
 
     return response
+
 
 def generate_chat_summary(session_id: str) -> str:
     try:

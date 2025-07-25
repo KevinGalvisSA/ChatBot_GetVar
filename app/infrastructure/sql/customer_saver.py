@@ -1,27 +1,28 @@
 from app.domain.model.customer import Customer
 from app.infrastructure.sql.setupDB import SessionLocal
-from datetime import datetime
 
-def get_or_create_customer(name: str, phone: int) -> Customer | None:
-    db = SessionLocal()
+def get_or_create_customer(name: str, phone: int) -> Customer:
+    print(f"🔍 [get_or_create_customer] Buscando o creando cliente ➜ name: {name}, phone: {phone}")
+    
+    session = SessionLocal()
     try:
-        customer = db.query(Customer).filter_by(phone=phone).first()
-        if not customer:
-            now = datetime.now()
-            customer = Customer(
-                name=name,
-                phone=phone,
-                createdBy=0,
-                updatedBy=0,
-                createdAt=now,
-                updatedAt=now
-            )
-            db.add(customer)
-            db.commit()
-            db.refresh(customer)
-        return customer
+        customer = session.query(Customer).filter(Customer.phone == phone).first()
+
+        if customer:
+            print(f"✅ Cliente encontrado ➜ ID: {customer.id}, Nombre: {customer.name}, Teléfono: {customer.phone}")
+            return customer
+
+        # Crear nuevo cliente
+        new_customer = Customer(name=name or "Sin nombre", phone=phone)
+        session.add(new_customer)
+        session.commit()
+        session.refresh(new_customer)
+
+        print(f"🆕 Cliente creado ➜ ID: {new_customer.id}, Nombre: {new_customer.name}, Teléfono: {new_customer.phone}")
+        return new_customer
     except Exception as e:
         print(f"❌ Error en get_or_create_customer: {e}")
-        return None
+        session.rollback()
+        raise e
     finally:
-        db.close()
+        session.close()

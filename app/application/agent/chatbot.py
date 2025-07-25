@@ -103,6 +103,12 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
         print(f"❌ Error usando Gemini: {e}")
         response = f"❌ Error al usar el Gemini: {str(e)}"
 
+    try:
+        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=user_input, message_type="human") # type: ignore
+        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=response, message_type="ai") # type: ignore
+    except Exception as e:
+        print(f"❌ Error guardando mensajes: {e}")
+
     return response
 
 

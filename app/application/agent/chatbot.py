@@ -39,8 +39,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
     if phone:
         BotRegulations.user_input["phone"] = phone
 
-    # 2️⃣ Obtener valores conocidos
-    name_known = BotRegulations.user_input.get("name")
+    # 2️⃣ Obtener teléfono conocido
     phone_known = BotRegulations.user_input.get("phone")
 
     # 3️⃣ Fallback: usar session_id como teléfono si no se extrajo
@@ -48,20 +47,25 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
         print(f"📲 Usando session_id como fallback de teléfono: {session_id}")
         phone_known = session_id
 
-    print(f"📌 Datos finales ➜ nombre: {name_known}, teléfono: {phone_known}")
-
     # 4️⃣ Buscar o crear cliente (solo si hay teléfono válido)
     id_customer = 0
+    name_known = None  # Inicializa aquí por claridad
     if phone_known:
         try:
             phone_num = int(phone_known)
             print(f"🔍 Buscando o creando cliente con teléfono: {phone_num}")
-            customer = get_or_create_customer(name=name_known, phone=phone_num)
+            customer = get_or_create_customer(name=BotRegulations.user_input.get("name"), phone=phone_num) # type: ignore
             id_customer = customer.id if customer else 0
+            # Forzar a que sea el nombre ubicado en customer.name
+            BotRegulations.user_input["name"] = customer.name
+            name_known = customer.name  # ✅ Actualiza la variable con el valor real
+            print("El nombre del customer es:", name_known)
         except Exception as e:
             print(f"❌ Error en get_or_create_customer: {e}")
     else:
         print("⚠️ Teléfono no válido. Cliente no será creado.")
+
+    print(f"📌 Datos finales ➜ nombre: {name_known}, teléfono: {phone_known}")
 
     # 5️⃣ Buscar contexto en Qdrant
     try:
@@ -72,29 +76,35 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
     # 6️⃣ Generar respuesta desde Gemini con historial
     try:
-        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer)
+        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer) # type: ignore
         messages = chat_history.get_messages()
+
+        print("Estos son los mensajes:", messages)
 
         formatted_history = "\n".join([
             f"Usuario: {m.content}" if m.type == "human" else f"Bot: {m.content}"
             for m in messages
         ])
 
-        prompt_con_historial = f"{formatted_history}\nUsuario: {user_input}"
+        estado_sesion = "\n".join([
+            f"{clave.capitalize()}: {valor}" for clave, valor in BotRegulations.user_input.items() if valor
+        ])
+
+        prompt_con_historial = (
+            f"[ESTADO DE SESIÓN]\n{estado_sesion}\n\n"
+            f"[HISTORIAL DE CONVERSACIÓN]\n{formatted_history}\n\n"
+            f"[NUEVO MENSAJE DEL USUARIO]\n{user_input}"
+        )
+
+        print("🧠 Prompt completo para Gemini:\n", prompt_con_historial)
         response = answer_with_gemini(question=prompt_con_historial, chunks=context_chunks)
 
     except Exception as e:
         print(f"❌ Error usando Gemini: {e}")
         response = f"❌ Error al usar el Gemini: {str(e)}"
 
-    # 7️⃣ Guardar mensajes en base de datos
-    try:
-        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=user_input, message_type="human") # type: ignore
-        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=response, message_type="ai") # type: ignore
-    except Exception as e:
-        print(f"❌ Error guardando mensajes: {e}")
-
     return response
+
 
 
 def generate_chat_summary(session_id: str) -> str:

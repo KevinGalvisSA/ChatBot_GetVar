@@ -82,7 +82,7 @@ from sqlalchemy.orm import sessionmaker
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class ChatMessageHistory:
-    def __init__(self, session_id: str, id_customer: int = 0, limit: int = 15):
+    def __init__(self, session_id: str, id_customer: int = 0, limit: int = 30):
         self.session_id = str(session_id)
         self.id_customer = id_customer
         self.limit = limit
@@ -94,7 +94,7 @@ class ChatMessageHistory:
                 rows = (
                     db.query(MessageStorage)
                     .filter(MessageStorage.session_id == self.session_id)
-                    .order_by(MessageStorage.id.asc())
+                    .order_by(MessageStorage.id.desc())
                     .limit(self.limit)
                     .all()
                 )
@@ -150,7 +150,7 @@ class ChatMessageHistory:
         print(f"🤖 Guardando mensaje de la IA: {content}")
         self.add_messages(AIMessage(content=content))
 
-def get_formatted_history(session_id: str, limit: int = 15) -> str:
+def get_formatted_history(session_id: str, limit: int = 30) -> str:
     print(f"[DEBUG] Obteniendo historial para session_id={session_id} con límite={limit}")
     
     history = ChatMessageHistory(session_id=session_id, limit=limit)

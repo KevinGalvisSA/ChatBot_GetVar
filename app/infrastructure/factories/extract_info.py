@@ -31,6 +31,7 @@ class InfoExtractor:
         text = text.strip().title()
         return text if text else None
 
+
     def extract(self, text: str) -> Dict[str, Optional[str]]:
         extracted_info: Dict[str, Optional[str]] = {
             'name': None,

@@ -10,8 +10,8 @@ class InfoExtractor:
             'rol': r"(?:me\s+desempeñ[oó]?\s+como|mi\s+rol\s+es|trabajo\s+como)\s*([A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,})"
         }
 
-        # Patrón mejorado para evitar empresas genéricas como "una empresa de videojuegos"
-        self.rol_company_pattern = r"soy\s+(?:el|la|un|una)?\s*(?P<rol>[a-záéíóúñ ]{2,30}?)\s+de\s+(?!una\s+empresa\s+de)(?P<empresa>[a-záéíóúñ0-9&.\- ]{2,})"
+        # Patrón corregido: "soy <rol> de <empresa>"
+        self.rol_company_pattern = r"soy\s+(?:el|la|un|una)?\s*(?P<rol>[a-záéíóúñ ]{2,30}?)\s+de\s+(?:una|un|el|la)?\s*(?P<empresa>[a-záéíóúñ0-9&.\- ]{2,})"
 
         # Frases genéricas que indican empresa sin nombre específico
         self.generic_company_phrases = [
@@ -28,8 +28,8 @@ class InfoExtractor:
     def clean_company(self, text: str) -> Optional[str]:
         for phrase in self.generic_company_phrases:
             text = re.sub(phrase, "", text, flags=re.IGNORECASE)
-        text = text.strip().title()
-        return text if text else None
+        return text.strip().title() if text.strip() else None
+
 
     def extract(self, text: str) -> Dict[str, Optional[str]]:
         extracted_info: Dict[str, Optional[str]] = {
@@ -44,15 +44,8 @@ class InfoExtractor:
         if match:
             raw_rol = match.group("rol").strip()
             raw_company = match.group("empresa").strip()
-
-            clean_company = self.clean_company(raw_company)
-
-            if clean_company:
-                extracted_info['rol'] = self.clean_rol(raw_rol)
-                extracted_info['company'] = clean_company
-            else:
-                # Solo guardar rol si la empresa no fue válida
-                extracted_info['rol'] = self.clean_rol(raw_rol)
+            extracted_info['rol'] = self.clean_rol(raw_rol)
+            extracted_info['company'] = self.clean_company(raw_company)
 
         # Buscar otros campos si aún no se han detectado
         for key, pattern in self.patterns.items():

@@ -57,7 +57,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
             phone_num = int(phone_known)
             print(f"🔍 Buscando o creando cliente con teléfono: {phone_num}")
             customer = get_or_create_customer(
-                name=BotRegulations.user_input.get("name"),
+                name=BotRegulations.user_input.get("name"), # type: ignore
                 phone=phone_num
             )
             id_customer = customer.id if customer else 0
@@ -67,7 +67,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
             # ✅ Nuevo: actualizar empresa y rol si fueron extraídos
             if company or rol:
-                update_customer_info(customer, company=company, rol=rol)
+                update_customer_info(customer, company=company, rol=rol) # type: ignore
 
         except Exception as e:
             print(f"❌ Error en get_or_create_customer: {e}")

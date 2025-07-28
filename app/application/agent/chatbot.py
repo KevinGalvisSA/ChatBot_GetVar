@@ -4,7 +4,7 @@ from app.infrastructure.sql.setupDB import ChatMessageHistory, get_customer_by_p
 from app.infrastructure.sql.message_saver import save_message
 from app.infrastructure.factories.extract_info import InfoExtractor
 from app.config.bot_regulations import BotRegulations
-from app.infrastructure.sql.customer_saver import get_or_create_customer
+from app.infrastructure.sql.customer_saver import get_or_create_customer, update_customer_info
 from langchain_core.messages import HumanMessage
 from app.models.context_chunk import ContextChunk
 import os
@@ -27,12 +27,14 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
     print(f"📝 Entrada del usuario: {user_input}")
     print(f"🆔 session_id: {session_id}")
 
-    # 1️⃣ Extraer nombre y teléfono del texto
+    # 1️⃣ Extraer datos del texto
     extracted_info = extractor.extract(user_input)
     name = extracted_info.get("name")
     phone = extracted_info.get("phone")
+    company = extracted_info.get("company")
+    rol = extracted_info.get("rol")
 
-    print(f"🔍 Extraído ➜ nombre: {name}, teléfono: {phone}")
+    print(f"🔍 Extraído ➜ nombre: {name}, teléfono: {phone}, empresa: {company}, rol: {rol}")
 
     if name:
         BotRegulations.user_input["name"] = name
@@ -49,17 +51,24 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
     # 4️⃣ Buscar o crear cliente (solo si hay teléfono válido)
     id_customer = 0
-    name_known = None  # Inicializa aquí por claridad
+    name_known = None
     if phone_known:
         try:
             phone_num = int(phone_known)
             print(f"🔍 Buscando o creando cliente con teléfono: {phone_num}")
-            customer = get_or_create_customer(name=BotRegulations.user_input.get("name"), phone=phone_num) # type: ignore
+            customer = get_or_create_customer(
+                name=BotRegulations.user_input.get("name"),
+                phone=phone_num
+            )
             id_customer = customer.id if customer else 0
-            # Forzar a que sea el nombre ubicado en customer.name
             BotRegulations.user_input["name"] = customer.name
-            name_known = customer.name  # ✅ Actualiza la variable con el valor real
+            name_known = customer.name
             print("El nombre del customer es:", name_known)
+
+            # ✅ Nuevo: actualizar empresa y rol si fueron extraídos
+            if company or rol:
+                update_customer_info(customer, company=company, rol=rol)
+
         except Exception as e:
             print(f"❌ Error en get_or_create_customer: {e}")
     else:
@@ -76,7 +85,7 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
 
     # 6️⃣ Generar respuesta desde Gemini con historial
     try:
-        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer) # type: ignore
+        chat_history = ChatMessageHistory(session_id=session_id, id_customer=id_customer)  # type: ignore
         messages = chat_history.get_messages()
 
         print("Estos son los mensajes:", messages)
@@ -103,15 +112,14 @@ def chat_with_bot(user_input: str, session_id: str) -> str:
         print(f"❌ Error usando Gemini: {e}")
         response = f"❌ Error al usar el Gemini: {str(e)}"
 
+    # 7️⃣ Guardar mensajes
     try:
-        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=user_input, message_type="human") # type: ignore
-        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=response, message_type="ai") # type: ignore
+        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=user_input, message_type="human")  # type: ignore
+        save_message(id_customer=id_customer or 0, session_id=int(session_id), content=response, message_type="ai")  # type: ignore
     except Exception as e:
         print(f"❌ Error guardando mensajes: {e}")
 
     return response
-
-
 
 def generate_chat_summary(session_id: str) -> str:
     try:

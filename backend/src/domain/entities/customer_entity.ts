@@ -19,6 +19,12 @@ export class Customer {
     @Column({ type: 'bigint', unique: true })
     phone!: number;
 
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    company!: string | null;
+
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    rol!: string | null;
+
     @Column({ type: 'int', nullable: true })
     createdBy!: number;
 

@@ -9,17 +9,25 @@ const customerService = new CustomerService();
 export class CustomerController {
     static async getOrCreate(req: Request, res: Response) {
         try {
-            const { name, phone } = req.body;
+            const { name, phone, company, rol } = req.body;
 
             if (!name || typeof name !== 'string' || name.trim() === '') {
-                return ApiResponse.badRequest(res, 'El nombre es obligatorio y debe ser una cadena no vacía');
+                return ApiResponse.badRequest(res, 'El campo name es obligatorio y debe ser un string');
             }
 
             if (!phone || isNaN(Number(phone))) {
-                return ApiResponse.badRequest(res, 'El teléfono es obligatorio y debe ser numérico');
+                return ApiResponse.badRequest(res, 'El campo phone es obligatorio y debe ser numérico');
             }
 
-            const customer = await customerService.getOrCreateCustomer(name, Number(phone));
+            if (company !== null && typeof company !== 'string') {
+                return ApiResponse.badRequest(res, 'El campo company debe ser un string')
+            }
+
+            if (rol !== null && typeof rol !== 'string'){
+                return ApiResponse.badRequest(res, 'El campo rol debe ser un string')
+            }
+
+            const customer = await customerService.getCustomer(name, Number(phone), company, rol);
             return ApiResponse.success(res, 'Cliente obtenido o creado correctamente', customer);
         } catch (error) {
             return ApiResponse.error(res, error);

@@ -20,6 +20,8 @@ export class WebhookController {
             // Simulación de estructura de payload Meta
             const phone = Number(body.from);
             const name = body.profile?.name || 'Sin Nombre';
+            const company = null;
+            const rol = null;
             const message = body.message?.text?.body || '';
             const messageId = body.message?.id;
             const deleted = body.message?.type === 'deleted';
@@ -29,7 +31,7 @@ export class WebhookController {
             }
 
             // 1. Crear o actualizar Customer
-            const customer = await customerService.getOrCreateCustomer(name, phone);
+            const customer = await customerService.getCustomer(name, phone, company, rol);
             if (customer.name !== name) {
                 await customerService.updateCustomer(customer.id, { name });
             }
@@ -38,7 +40,7 @@ export class WebhookController {
             const chat = await chatService.createChatIfNotExists(customer.id);
 
             // 3. Actualizar campo last_connection
-            await chatService.updateChat(chat.id, { last_connection: new Date() });
+            await chatService.updateChat(chat.id, { last_connection: new Date(), state: 1 });
 
             // 4. Manejo de eliminación de mensajes
             if (deleted && messageId) {

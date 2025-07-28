@@ -10,10 +10,10 @@ class InfoExtractor:
             'rol': r"(?:me\s+desempeñ[oó]?\s+como|mi\s+rol\s+es|trabajo\s+como)\s*([A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,})"
         }
 
-        # Patrón para frases como: "Soy <rol> de <empresa>"
-        self.rol_company_pattern = r"soy\s+(?:el|la|un|una)?\s*([A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,})\s+de\s+(?:una|un|el|la)?\s*([A-Za-zÁÉÍÓÚáéíóúÑñ0-9&.\- ]{2,})"
+        # Patrón corregido: "soy <rol> de <empresa>"
+        self.rol_company_pattern = r"soy\s+(?:el|la|un|una)?\s*(?P<rol>[a-záéíóúñ ]{2,30}?)\s+de\s+(?:una|un|el|la)?\s*(?P<empresa>[a-záéíóúñ0-9&.\- ]{2,})"
 
-        # Frases genéricas que indican empresa sin nombre
+        # Frases genéricas que indican empresa sin nombre específico
         self.generic_company_phrases = [
             r"una\s+empresa\s+de\s+[a-záéíóúñ\s]+",
             r"una\s+compañ[ií]a\s+de\s+[a-záéíóúñ\s]+",
@@ -30,6 +30,7 @@ class InfoExtractor:
             text = re.sub(phrase, "", text, flags=re.IGNORECASE)
         return text.strip().title() if text.strip() else None
 
+
     def extract(self, text: str) -> Dict[str, Optional[str]]:
         extracted_info: Dict[str, Optional[str]] = {
             'name': None,
@@ -38,15 +39,15 @@ class InfoExtractor:
             'rol': None
         }
 
-        # Primero patrón especial: "soy <rol> de <empresa>"
+        # Buscar primero por la estructura especial: "Soy <rol> de <empresa>"
         match = re.search(self.rol_company_pattern, text, re.IGNORECASE)
         if match:
-            raw_rol = match.group(1).strip()
-            raw_company = match.group(2).strip()
+            raw_rol = match.group("rol").strip()
+            raw_company = match.group("empresa").strip()
             extracted_info['rol'] = self.clean_rol(raw_rol)
             extracted_info['company'] = self.clean_company(raw_company)
 
-        # Buscar otros campos si aún no están extraídos
+        # Buscar otros campos si aún no se han detectado
         for key, pattern in self.patterns.items():
             if extracted_info[key] is not None:
                 continue

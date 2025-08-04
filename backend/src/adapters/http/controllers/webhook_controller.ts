@@ -38,7 +38,7 @@ export class WebhookController {
       const messageObj = value?.messages?.[0];
 
       const phone = Number(contact?.wa_id);
-      const name = null
+      const name = contact?.profile?.name || 'Sin Nombre';
       const message = messageObj?.text?.body || '';
       const messageId = messageObj?.id;
       const deleted = messageObj?.type === 'deleted';
@@ -48,7 +48,7 @@ export class WebhookController {
       }
 
       // 1. Crear o actualizar Customer
-      const customer = await customerService.getCustomer(name, phone, null, null); 
+      const customer = await customerService.getCustomer(name, phone, null, null);
       if (customer.name !== name) {
         await customerService.updateCustomer(customer.id, { name });
       }

@@ -12,9 +12,8 @@ class BotRegulations:
         "solucion_seleccionada": None,
         "opcion_seleccionada": None,
         "empresa": None,  # NUEVO
-        "rol": None,  # NUEVO
-        "opciones_mostradas": False,
-        "ya_saludo": False,  # NUEVO: para controlar saludos repetidos
+        "rol": None,      # NUEVO
+        "opciones_mostradas": False
     }
 
     RULES = {
@@ -71,8 +70,16 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 - Solo se realiza si **no tengo ya esos datos**.
 - ❌ No debo avanzar hacia las **opciones A y B** sin antes haber hecho esta pregunta (si aplica).
 
-### 4️⃣ Seguimiento y nuevas alternativas
-- Si el usuario pide “otra alternativa”, puedo dar nuevas SOLUCIONES con numeración clara.
+**3️⃣.1 Validación de empresa y rol**  
+- Después de que el usuario haya recibido las soluciones, debo preguntar:  
+  ✅ _"¿A qué empresa perteneces y cuál es tu rol allí?"_  
+- No debo avanzar hacia las opciones A y B sin tener esta información.  
+- Si ya tengo esos datos en memoria, no los vuelvo a pedir.
+
+---
+
+**4️⃣ Seguimiento y nuevas alternativas**  
+- Si el usuario pide “otra alternativa”, puedo dar nuevas SOLUCIONES con numeración clara.  
 
 📌 **Regla de desambiguación:**
 - Si el usuario dice “la 2 suena interesante” y **NO he dado opciones aún**, entiendo que habla de una **SOLUCIÓN**.
@@ -96,8 +103,22 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 - Solo muestro **Opciones A y B** cuando el usuario acepta una SOLUCIÓN.
 - ❌ Nunca anticipo las opciones antes de aceptación.
 
-📍 **Regla de no repetición:**
-- ✅ **Una vez mostradas las opciones A y B, no las repito en conversaciones posteriores a menos que el usuario las pida explícitamente.**
+**6️⃣ Saludos y agradecimientos**  
+- ✅ **Kai solo saluda si detecta que el usuario inicia con un saludo explícito**, como “hola”, “buenos días”, etc.  
+- ❌ Nunca repite saludos automáticamente en cada mensaje.  
+- ✅ Agradece solo si el usuario lo hace primero.  
+
+---
+
+### 7️⃣ 📦 **Opciones de implementación (A y B)**
+
+📍 **Cuándo ofrecerlas:**  
+- Solo muestro **Opciones A y B** cuando el usuario acepta una SOLUCIÓN.  
+
+❌ Nunca anticipo las opciones antes de aceptación.
+
+📍 **Regla de no repetición:**  
+- ✅ **Una vez mostradas las opciones A y B, no las repito en conversaciones posteriores a menos que el usuario las pida explícitamente.**  
 - Si el usuario dice “¿cuáles eran las opciones?” o “recuérdame las opciones”, entonces las vuelvo a mostrar.
 
 ---
@@ -108,17 +129,19 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 
 ---
 
-## ✔️ REGLA EXTRA DE EMPRESA Y ROL
-- Si el usuario **ya mencionó su rol o su empresa** (por ejemplo, "Soy el CEO de Nissan"), **no debo preguntar nuevamente por eso.**
-- Esa información debe detectarse automáticamente en el mensaje o en el historial.
+### 🔄 Manejo de respuestas A o B
+
+- Si el usuario elige **A**:  
+    ✅ _"¡Listo! Escalaré tu caso al área comercial de Campuslands para definir los detalles."_  
+
+- Si el usuario elige **B**:  
+    ✅ _"Perfecto. Aquí tienes el enlace para agendar tu sesión personalizada: https://campuslands.com/agendar"_  
 
 ---
 
 
 """
     }
-
-    # ==== MÉTODOS DE VALIDACIÓN ====
 
     @staticmethod
     def get_rule(rule_key: str) -> str:
@@ -133,6 +156,7 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 
     @staticmethod
     def has_company_info() -> bool:
+        """Verifica si ya se proporcionaron empresa y rol"""
         return bool(
             BotRegulations.user_input.get("empresa")
             and BotRegulations.user_input.get("rol")
@@ -140,13 +164,13 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 
     @staticmethod
     def has_enough_context() -> bool:
-        return all(
-            [
-                BotRegulations.user_input.get("problema"),
-                BotRegulations.user_input.get("objetivo"),
-                BotRegulations.user_input.get("tareas_repetitivas"),
-            ]
-        )
+        """Verifica si ya hay información suficiente para proponer soluciones"""
+        return all([
+            BotRegulations.user_input.get("problema"),
+            BotRegulations.user_input.get("objetivo"),
+            BotRegulations.user_input.get("tareas_repetitivas"),
+            BotRegulations.has_company_info()
+        ])
 
     @staticmethod
     def missing_context_questions() -> list[str]:
@@ -160,6 +184,10 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
             )
         if not BotRegulations.user_input.get("objetivo"):
             questions.append("¿Qué resultado esperas lograr con la automatización?")
+        if not BotRegulations.user_input.get("empresa"):
+            questions.append("¿A qué empresa perteneces?")
+        if not BotRegulations.user_input.get("rol"):
+            questions.append("¿Cuál es tu rol dentro de esa empresa?")
         return questions
 
     @staticmethod

@@ -2,20 +2,22 @@ class BotRegulations:
     """Reglamento y comportamiento del Bot Asistente Virtual de Campuslands"""
 
     user_input = {
-        # "nombre": None,
-        # "telefono": None,
-        # "problema": None,
-        # "objetivo": None,
-        # "tareas_repetitivas": None,
-        # "areas_mejora": None,
-        # "detalle_adicional": None,
-        # "solucion_seleccionada": None,
-        # "opcion_seleccionada": None,
-        # "opciones_mostradas": False   # <-- NUEVO FLAG
+        "nombre": None,
+        "telefono": None,
+        "problema": None,
+        "objetivo": None,
+        "tareas_repetitivas": None,
+        "areas_mejora": None,
+        "detalle_adicional": None,
+        "solucion_seleccionada": None,
+        "opcion_seleccionada": None,
+        "empresa": None,  # NUEVO
+        "rol": None,      # NUEVO
+        "opciones_mostradas": False
     }
 
     RULES = {
-    "intro": """
+        "intro": """
 Soy **Kai**, el asistente virtual de **Campuslands**, especializado en asesorar sobre **automatización de procesos con inteligencia artificial (IA)** para empresas y personas.  
 Mi misión es **entender la situación del usuario, proponer soluciones de IA y guiarlo en la implementación**, ya sea con productos de Campuslands o capacitaciones personalizadas.
 
@@ -69,6 +71,14 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 
 ---
 
+**3️⃣.1 Validación de empresa y rol**  
+- Después de que el usuario haya recibido las soluciones, debo preguntar:  
+  ✅ _"¿A qué empresa perteneces y cuál es tu rol allí?"_  
+- No debo avanzar hacia las opciones A y B sin tener esta información.  
+- Si ya tengo esos datos en memoria, no los vuelvo a pedir.
+
+---
+
 **4️⃣ Seguimiento y nuevas alternativas**  
 - Si el usuario pide “otra alternativa”, puedo dar nuevas SOLUCIONES con numeración clara.  
 
@@ -86,7 +96,9 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 ---
 
 **6️⃣ Saludos y agradecimientos**  
-- ✅ **Kai solo saluda o agradece la PRIMERA vez en una sesión** o si el usuario lo saluda o agradece de nuevo explícitamente.  
+- ✅ **Kai solo saluda si detecta que el usuario inicia con un saludo explícito**, como “hola”, “buenos días”, etc.  
+- ❌ Nunca repite saludos automáticamente en cada mensaje.  
+- ✅ Agradece solo si el usuario lo hace primero.  
 
 ---
 
@@ -119,7 +131,7 @@ Para implementarla, tienes dos opciones:"_
     ✅ _"¡Listo! Escalaré tu caso al área comercial de Campuslands para definir los detalles."_  
 
 - Si el usuario elige **B**:  
-    ✅ _"Perfecto. Aquí tienes el enlace para agendar tu sesión personalizada: https://campuslands.com/agendar"_
+    ✅ _"Perfecto. Aquí tienes el enlace para agendar tu sesión personalizada: https://campuslands.com/agendar"_  
 
 ---
 
@@ -191,7 +203,7 @@ B) Capacitación personalizada. ¿Cuál prefieres?”
 
 *(Kai NO vuelve a mostrar A y B, solo las menciona si el usuario lo pide)*
 """
-}
+    }
 
     @staticmethod
     def get_rule(rule_key: str) -> str:
@@ -207,12 +219,21 @@ B) Capacitación personalizada. ¿Cuál prefieres?”
         )
 
     @staticmethod
+    def has_company_info() -> bool:
+        """Verifica si ya se proporcionaron empresa y rol"""
+        return bool(
+            BotRegulations.user_input.get("empresa")
+            and BotRegulations.user_input.get("rol")
+        )
+
+    @staticmethod
     def has_enough_context() -> bool:
         """Verifica si ya hay información suficiente para proponer soluciones"""
         return all([
             BotRegulations.user_input.get("problema"),
             BotRegulations.user_input.get("objetivo"),
             BotRegulations.user_input.get("tareas_repetitivas"),
+            BotRegulations.has_company_info()
         ])
 
     @staticmethod
@@ -225,4 +246,8 @@ B) Capacitación personalizada. ¿Cuál prefieres?”
             questions.append("¿Qué tareas dentro de ese proceso son más repetitivas o consumen más tiempo?")
         if not BotRegulations.user_input.get("objetivo"):
             questions.append("¿Qué resultado esperas lograr con la automatización?")
+        if not BotRegulations.user_input.get("empresa"):
+            questions.append("¿A qué empresa perteneces?")
+        if not BotRegulations.user_input.get("rol"):
+            questions.append("¿Cuál es tu rol dentro de esa empresa?")
         return questions

@@ -107,6 +107,14 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
         )
 
     @staticmethod
+    def has_company_info() -> bool:
+        """Verifica si ya se proporcionaron empresa y rol"""
+        return bool(
+            BotRegulations.user_input.get("empresa")
+            and BotRegulations.user_input.get("rol")
+        )
+
+    @staticmethod
     def has_enough_context() -> bool:
         """Verifica si hay información suficiente para proponer soluciones"""
         return all(

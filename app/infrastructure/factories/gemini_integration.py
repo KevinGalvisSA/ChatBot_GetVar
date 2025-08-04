@@ -2,7 +2,6 @@ from app.configuration import Config
 import google.generativeai as genai  # type: ignore
 from app.models.context_chunk import ContextChunk
 from app.config.bot_regulations import BotRegulations  # Importamos las reglas
-
 from dotenv import load_dotenv  # Para cargar las variables de entorno
 
 # Cargar variables de entorno

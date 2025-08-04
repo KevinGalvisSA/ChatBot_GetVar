@@ -12,10 +12,10 @@ class Config:
     QDRANT_COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "knowledge_base")
     
     # Clave de API de Qdrant
-    QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
+    QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
     # Configuración de Gemini (si es necesario)
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
     @staticmethod
     def print_config():

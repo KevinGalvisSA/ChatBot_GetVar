@@ -1,46 +1,35 @@
+# app/infrastructure/sql/message_history.py
+
 from sqlalchemy.orm import sessionmaker
 from app.domain.model.messageStorage import MessageStorage
 from app.infrastructure.sql.setupDB import ChatMessageHistory, engine
+from langchain_core.language_models import BaseLanguageModel
 
-# Crear una sesión local
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def save_message(id_customer: int, session_id: int, content: str, message_type: str):
-    """
-    Guarda un mensaje en la base de datos.
-
-    Args:
-        id_customer (int): ID del cliente que envía o recibe el mensaje.
-        session_id (int): ID de la sesión de conversación.
-        content (str): Contenido textual del mensaje.
-        message_type (str): Tipo de mensaje, por ejemplo 'ai' o 'human'.
-    """
+def save_message(id_customer: int, session_id: str, content: str, message_type: str) -> None:
+    print(f"💾 Guardando mensaje ➜ customer_id={id_customer}, session_id={session_id}, type={message_type}")
     db = SessionLocal()
     try:
-        print(f"🛠️ DEBUG ➜ id_customer={id_customer}, session_id={session_id}, message_type={message_type}")
-        
-        new_message = MessageStorage(
+        message = MessageStorage(
             id_customer=id_customer,
-            session_id=str(session_id),
+            session_id=session_id,
             message=content,
             message_type=message_type
         )
-
-        print(f"🧪 DEBUG ➜ Objeto a guardar: {vars(new_message)}")
-
-        db.add(new_message)
+        db.add(message)
         db.commit()
-        db.refresh(new_message)  # 🔄 Opcional: actualiza con valores generados como ID
-
-        print(f"✅ Mensaje guardado exitosamente: {new_message}")
+        db.refresh(message)
+        print(f"✅ Mensaje guardado: {message}")
     except Exception as e:
         db.rollback()
-        print(f"❌ Error guardando en messageStorage: {e}")
+        print(f"❌ Error al guardar mensaje: {e}")
+        raise
     finally:
         db.close()
 
 
-def handle_conversation_flow(session_id: str, id_customer: int, user_input: str, model) -> str:
+def handle_conversation_flow(session_id: str, id_customer: int, user_input: str, model: BaseLanguageModel) -> str:
     history = ChatMessageHistory(session_id=session_id, id_customer=id_customer)
     history.add_user_message(user_input)
     messages = history.get_messages()

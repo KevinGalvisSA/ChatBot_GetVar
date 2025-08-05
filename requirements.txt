@@ -1,31 +1,15 @@
-# Frameworks y librerías principales
-fastapi
-uvicorn
-pydantic
-google-generativeai
-google.genai
-websockets
-dotenv
-
-# LangChain y Langraph (para el chatbot)
-langchain
-langchain_community
-langgraph
-langchain-community
-
-# Sentence-Transformers (para generar embeddings)
-sentence-transformers
-
-# Qdrant-Client (para interactuar con Qdrant)
-qdrant-client
-
-# Cargar variables de entorno desde .env
-python-dotenv
-
-# Librerías adicionales para manejar documentos PDF
-PyMuPDF
-
-# Librería para conectar a la base de datos SQL
-sqlalchemy 
-pymysql
-cryptography
+fastapi==0.111.0
+uvicorn==0.30.1
+pydantic==2.7.3
+google-generativeai==0.5.2
+websockets==12.0
+python-dotenv==1.0.1
+langchain==0.1.16
+langchain-community==0.0.34
+langgraph==0.0.49
+sentence-transformers==2.7.0
+qdrant-client==1.8.0
+pymupdf==1.23.7
+sqlalchemy==2.0.30
+pymysql==1.1.1
+cryptography==42.0.7

@@ -29,29 +29,30 @@ def get_or_create_customer(name: str, phone: int) -> Customer:
 
 def update_customer_info(customer: Customer, company: str = None, rol: str = None):
     """
-    Actualiza los campos 'company' y 'rol' del cliente si están vacíos y se proporcionan nuevos valores.
+    Actualiza los campos 'company' y 'rol' del cliente si se proporcionan nuevos valores
+    distintos a los actuales.
     """
     print(f"🔄 [update_customer_info] Verificando actualización para cliente ID: {customer.id}")
     session = SessionLocal()
     try:
         updated = False
 
-        if company and not customer.company:
+        if company and customer.company != company:
+            print(f"🏢 Empresa actual: {customer.company} ➜ Nueva: {company}")
             customer.company = company
-            print(f"🏢 Actualizando empresa a: {company}")
             updated = True
 
-        if rol and not customer.rol:
+        if rol and customer.rol != rol:
+            print(f"👔 Rol actual: {customer.rol} ➜ Nuevo: {rol}")
             customer.rol = rol
-            print(f"👔 Actualizando rol a: {rol}")
             updated = True
 
         if updated:
-            session.merge(customer)  # O session.add(customer), ambos funcionan
+            session.merge(customer)
             session.commit()
             print("✅ Cliente actualizado con nuevos datos.")
         else:
-            print("ℹ️ No se realizó ninguna actualización (ya existían los datos).")
+            print("ℹ️ No se realizó ninguna actualización (los datos eran iguales).")
 
     except Exception as e:
         print(f"❌ Error al actualizar cliente: {e}")

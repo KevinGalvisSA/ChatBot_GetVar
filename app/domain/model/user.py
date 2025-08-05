@@ -7,11 +7,11 @@ class User(BaseModel):
     - name: Nombre del usuario
     - phone: Teléfono del usuario
     """
-    name: Optional[str] = None  # Nombre del usuario
-    phone: Optional[str] = None  # Teléfono del usuario
+    name: Optional[str] = None
+    phone: Optional[str] = None
 
     class Config:
-        orm_mode = True  # Permite la conversión de modelos ORM si usamos una base de datos
+        orm_mode = True  # Permite la conversión desde modelos ORM (como SQLAlchemy)
 
     def __str__(self):
         return f"User(name={self.name}, phone={self.phone})"

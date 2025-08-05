@@ -11,12 +11,10 @@ class BotRegulations:
         "detalle_adicional": None,
         "solucion_seleccionada": None,
         "opcion_seleccionada": None,
-        "empresa": None,
-        "rol": None,
+        "empresa": None,  # NUEVO
+        "rol": None,      # NUEVO
         "opciones_mostradas": False,
-        "soluciones_mostradas": False,  # NUEVO: Para controlar si ya se propusieron soluciones
-        "ya_saludo": False,             # Controla que solo salude una vez
-        "conversacion_nueva": True      # NUEVO: Detecta si es una nueva sesión
+        "ya_saludo": False  # NUEVO: para controlar saludos repetidos
     }
 
     RULES = {
@@ -102,8 +100,7 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 **6️⃣ Saludos y agradecimientos**  
 - ✅ **Kai solo saluda si detecta que el usuario inicia con un saludo explícito**, como “hola”, “buenos días”, etc.  
 - ❌ Nunca repite saludos automáticamente en cada mensaje.  
-- ✅ Agradece solo si el usuario lo hace primero.  
-- ✅ Si el usuario ya saludó antes, no vuelvo a saludar aunque inicie otra conversación.
+- ✅ Agradece solo si el usuario lo hace primero.
 
 ---
 
@@ -126,7 +123,8 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 
 """
     }
-# ==== MÉTODOS DE VALIDACIÓN ====
+
+    # ==== MÉTODOS DE VALIDACIÓN ====
 
     @staticmethod
     def get_rule(rule_key: str) -> str:
@@ -167,34 +165,18 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
         return questions
 
     @staticmethod
-    def should_ask_company_info() -> bool:
-        """
-        Pregunta rol y empresa SOLO si:
-        - Ya se presentaron soluciones
-        - Aún no están definidos
-        - Y la conversación no es nueva (es continuación)
-        """
-        if not BotRegulations.user_input["soluciones_mostradas"]:
-            return False
-
-        if BotRegulations.user_input["conversacion_nueva"]:
-            return False
-
-        return not BotRegulations.has_company_info()
-
-    @staticmethod
-    def company_info_questions() -> list[str]:
-        """Devuelve preguntas separadas de empresa y rol si faltan"""
-        questions = []
+    def company_info_needed_after_solution() -> list[str]:
+        """Devuelve preguntas si empresa o rol faltan después de las soluciones"""
+        preguntas = []
         if not BotRegulations.user_input.get("empresa"):
-            questions.append("¿A qué empresa perteneces?")
+            preguntas.append("¿A qué empresa perteneces?")
         if not BotRegulations.user_input.get("rol"):
-            questions.append("¿Cuál es tu rol dentro de esa empresa?")
-        return questions
+            preguntas.append("¿Cuál es tu rol dentro de esa empresa?")
+        return preguntas
 
     @staticmethod
     def should_greet(user_message: str) -> bool:
-        """Determina si Kai debe saludar una sola vez al iniciar"""
+        """Determina si Kai debe saludar"""
         saludos = ["hola", "buenas", "hey", "qué más", "buenos días", "buenas tardes", "buenas noches"]
         if any(s in user_message.lower() for s in saludos) and not BotRegulations.user_input["ya_saludo"]:
             BotRegulations.user_input["ya_saludo"] = True
@@ -205,13 +187,3 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
     def should_ask_for(field: str) -> bool:
         """Consulta si falta un campo específico"""
         return not BotRegulations.user_input.get(field)
-
-    @staticmethod
-    def is_new_conversation() -> bool:
-        """Indica si es una nueva sesión para evitar asumir continuidad"""
-        return BotRegulations.user_input["conversacion_nueva"]
-
-    @staticmethod
-    def mark_conversation_active():
-        """Marca la conversación como activa (ya no es nueva)"""
-        BotRegulations.user_input["conversacion_nueva"] = False

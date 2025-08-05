@@ -59,7 +59,7 @@ AppDataSource.initialize()
     import('./cron/inactiveChatCron');
 
     server.listen(PORT, () => {
-      console.log(`🚀 Servidor backend escuchando en http://localhost:${PORT}`);
+      console.log(`🚀 Servidor backend escuchando en https://f7mtd1vf-4000.use2.devtunnels.ms/webhook/whatsapp`);
     });
   })
   .catch((err) => {

@@ -10,7 +10,7 @@ export class CustomerService {
         this.customerRepository = new CustomerRepository();
     }
 
-    async getCustomer(name: string, phone: number, company: string | null, rol: string | null,): Promise<Customer> {
+    async getCustomer(name: null | string, phone: number, company: string | null, rol: string | null,): Promise<Customer> {
         const existing = await this.customerRepository.findByphone(phone);
         if (existing) return existing;
 

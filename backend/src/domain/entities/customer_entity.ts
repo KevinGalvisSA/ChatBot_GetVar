@@ -14,7 +14,7 @@ export class Customer {
     id!: number;
 
     @Column({ type: 'varchar', length: 100 })
-    name!: string;
+    name!: string | null;
 
     @Column({ type: 'bigint', unique: true })
     phone!: number;

@@ -11,10 +11,6 @@ export class CustomerController {
         try {
             const { name, phone, company, rol } = req.body;
 
-            if (!name || typeof name !== 'string' || name.trim() === '') {
-                return ApiResponse.badRequest(res, 'El campo name es obligatorio y debe ser un string');
-            }
-
             if (!phone || isNaN(Number(phone))) {
                 return ApiResponse.badRequest(res, 'El campo phone es obligatorio y debe ser numérico');
             }

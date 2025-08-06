@@ -26,16 +26,23 @@ def get_or_create_customer(name: str, phone: int) -> Customer:
         session.close()
 
 
-def update_customer_info(customer: Customer, company: str = None, rol: str = None) -> None:
+def update_customer_info(customer: Customer, name: str = None, company: str = None, rol: str = None) -> None:
     print(f"🔄 Verificando actualización para cliente ID: {customer.id}")
     session = SessionLocal()
     try:
         updated = False
-        if company and not customer.company:
+
+        if name and customer.name != name:
+            customer.name = name
+            print(f"📝 Nombre actualizado a: {name}")
+            updated = True
+
+        if company and customer.company != company:
             customer.company = company
             print(f"🏢 Empresa actualizada a: {company}")
             updated = True
-        if rol and not customer.rol:
+
+        if rol and customer.rol != rol:
             customer.rol = rol
             print(f"👔 Rol actualizado a: {rol}")
             updated = True
@@ -52,3 +59,4 @@ def update_customer_info(customer: Customer, company: str = None, rol: str = Non
         raise
     finally:
         session.close()
+

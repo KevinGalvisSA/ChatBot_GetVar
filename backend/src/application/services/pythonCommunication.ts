@@ -3,7 +3,9 @@
 export class pythonCommunication {
     static async sendMessageToPython(
         message: string,
-        session_id: string
+        session_id: string,
+        name?: string,
+        phone?: string
     ): Promise<string> {
         console.log('📤 Enviando mensaje a FastAPI:', message);
 
@@ -11,7 +13,7 @@ export class pythonCommunication {
             const response = await fetch('http://localhost:8000/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, session_id }),
+                body: JSON.stringify({ message, session_id, name, phone }),
             });
 
             if (!response.ok) {

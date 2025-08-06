@@ -70,7 +70,7 @@ export class ChatService {
         if (!customer) throw new Error('Cliente no encontrado');
 
         const chat = await this.createChatIfNotExists(id_customer);
-        const session_id = customer.phone.toString();
+        const session_id = customer.phone.toString(); // ✅ sigue siendo el session_id
 
         // Guardar mensaje del usuario
         await this.messageService.createMessage({
@@ -81,8 +81,13 @@ export class ChatService {
             updatedAt: new Date(),
         });
 
-        // Obtener respuesta del bot
-        const botResponse = await pythonCommunication.sendMessageToPython(userMessage, session_id);
+        // ✅ Enviar mensaje con nombre y teléfono al bot
+        const botResponse = await pythonCommunication.sendMessageToPython(
+            userMessage,
+            session_id,
+            customer.name,            // name
+            customer.phone.toString() // phone
+        );
 
         // Guardar respuesta del bot
         await messageService.createMessage({
@@ -95,6 +100,7 @@ export class ChatService {
 
         return botResponse;
     }
+
 
 
     async updateChatStateByCustomer(id_customer: number, newState: number): Promise<Chat> {

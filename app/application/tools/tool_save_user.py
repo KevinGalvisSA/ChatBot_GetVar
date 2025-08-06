@@ -1,11 +1,9 @@
+# app/application/tools/tool_save_user.py
+
 from app.domain.model.state import State
 from app.infrastructure.sql.customer_saver import get_or_create_customer, update_customer_info
 
 def save_user_tool(state: State) -> dict:
-    """
-    Tool que guarda el usuario en la base de datos si tiene información mínima.
-    Si el usuario ya existe y se detecta algún cambio en su info, lo actualiza.
-    """
     print("\n📌 [save_user_tool] Ejecutando tool...")
     print(f"🔎 State ➜ name: {state.name}, phone: {state.phone}, company: {state.company}, rol: {state.rol}")
 
@@ -15,21 +13,18 @@ def save_user_tool(state: State) -> dict:
         print("📥 Buscando o creando usuario...")
         customer = get_or_create_customer(state.name, state.phone)
 
-        # Detectar si hay cambios
-        needs_update = (
-            (state.name and customer.name != state.name) or
-            (state.company and customer.company != state.company) or
-            (state.rol and customer.rol != state.rol)
-        )
+        # Solo actualizamos si en el input vino nueva info (i.e. el valor en el state cambió respecto a DB)
+        updates = {}
+        if state.company and state.company != customer.company:
+            updates["company"] = state.company
+        if state.rol and state.rol != customer.rol:
+            updates["rol"] = state.rol
+        if state.name and state.name != customer.name:
+            updates["name"] = state.name
 
-        if needs_update:
+        if updates:
             print("🛠️ Cambios detectados. Actualizando información del cliente...")
-            update_customer_info(
-                customer,
-                name=state.name,
-                company=state.company,
-                rol=state.rol
-            )
+            update_customer_info(customer, **updates)
         else:
             print("✅ No se detectaron cambios. Cliente ya actualizado.")
 

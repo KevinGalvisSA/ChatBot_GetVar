@@ -1,3 +1,5 @@
+# app/infrastructure/factories/extract_info.py
+
 import re
 from typing import Dict, Optional
 
@@ -10,10 +12,9 @@ class InfoExtractor:
             'rol': r"(?:me\s+desempeñ[oó]?\s+como|mi\s+rol\s+es|trabajo\s+como)\s*([A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,})"
         }
 
-        # Patrón corregido: "soy <rol> de <empresa>"
+        # Patrón especial: "soy <rol> de <empresa>"
         self.rol_company_pattern = r"soy\s+(?:el|la|un|una)?\s*(?P<rol>[a-záéíóúñ ]{2,30}?)\s+de\s+(?:una|un|el|la)?\s*(?P<empresa>[a-záéíóúñ0-9&.\- ]{2,})"
 
-        # Frases genéricas que indican empresa sin nombre específico
         self.generic_company_phrases = [
             r"una\s+empresa\s+de\s+[a-záéíóúñ\s]+",
             r"una\s+compañ[ií]a\s+de\s+[a-záéíóúñ\s]+",
@@ -30,16 +31,9 @@ class InfoExtractor:
             text = re.sub(phrase, "", text, flags=re.IGNORECASE)
         return text.strip().title() if text.strip() else None
 
-
     def extract(self, text: str) -> Dict[str, Optional[str]]:
-        extracted_info: Dict[str, Optional[str]] = {
-            'name': None,
-            'phone': None,
-            'company': None,
-            'rol': None
-        }
+        extracted_info = {'name': None, 'phone': None, 'company': None, 'rol': None}
 
-        # Buscar primero por la estructura especial: "Soy <rol> de <empresa>"
         match = re.search(self.rol_company_pattern, text, re.IGNORECASE)
         if match:
             raw_rol = match.group("rol").strip()
@@ -47,11 +41,9 @@ class InfoExtractor:
             extracted_info['rol'] = self.clean_rol(raw_rol)
             extracted_info['company'] = self.clean_company(raw_company)
 
-        # Buscar otros campos si aún no se han detectado
         for key, pattern in self.patterns.items():
             if extracted_info[key] is not None:
                 continue
-
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 value = match.group(1).strip()
@@ -64,7 +56,6 @@ class InfoExtractor:
                     extracted_info[key] = self.clean_company(value)
                 else:
                     extracted_info[key] = value.title()
-
         return extracted_info
 
     def validate_extracted_info(self, extracted_info: Dict[str, Optional[str]]) -> str:
@@ -75,6 +66,5 @@ class InfoExtractor:
             missing.append("tu número de teléfono")
 
         if missing:
-            return f"Para continuar necesito {', y '.join(missing)}. ¿Podrías proporcionármelos por favor?"
-
+            return f"Para continuar necesito {', y '.join(missing)}. ¿Podrías proporcionármelos por favor? 📝"
         return "✅ ¡Gracias por la información! Ahora dime, ¿en qué puedo ayudarte?"

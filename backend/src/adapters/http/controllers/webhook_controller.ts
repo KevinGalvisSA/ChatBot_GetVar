@@ -38,7 +38,7 @@ export class WebhookController {
       const messageObj = value?.messages?.[0];
 
       const phone = Number(contact?.wa_id);
-      const name = contact?.profile?.name || 'Sin Nombre';
+      const name = null
       const message = messageObj?.text?.body || '';
       const messageId = messageObj?.id;
       const deleted = messageObj?.type === 'deleted';

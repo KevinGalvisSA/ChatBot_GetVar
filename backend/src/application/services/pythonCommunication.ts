@@ -4,7 +4,7 @@ export class pythonCommunication {
     static async sendMessageToPython(
         message: string,
         session_id: string,
-        name?: string,
+        name?: string | null,
         phone?: string
     ): Promise<string> {
         console.log('📤 Enviando mensaje a FastAPI:', message);

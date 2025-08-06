@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 from app.application.agent.chatbot import chat_with_bot, generate_chat_summary
 import traceback
 
@@ -10,6 +11,8 @@ router = APIRouter()
 class UserInput(BaseModel):
     message: str
     session_id: str
+    name: Optional[str] = None
+    phone: Optional[str] = None
     chat_id: int | None = None  # Ignorado de momento
 
 @router.post("/chat")
@@ -17,7 +20,9 @@ async def chat_with_bot_endpoint(user_input: UserInput):
     try:
         response = await chat_with_bot(
             user_input=user_input.message,
-            session_id=user_input.session_id
+            session_id=user_input.session_id,
+            name=user_input.name,
+            phone=user_input.phone
         )
         return {"response": response}
     except Exception as e:

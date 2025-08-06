@@ -6,11 +6,11 @@ from app.application.agent.langgraph_flow import build_kai_graph
 # Inicializamos el flujo de LangGraph (solo una vez)
 kai_graph = build_kai_graph()
 
-async def chat_with_bot(user_input: str, session_id: str) -> str:
+async def chat_with_bot(user_input: str, session_id: str, name: str, phone:str) -> str:
     """
     Ejecuta el flujo de conversación del bot con el estado inicial.
     """
-    initial_state = State(input=user_input, session_id=session_id)
+    initial_state = State(input=user_input, session_id=session_id, name=name, phone=phone)
 
     print("🧾 Initial state:", initial_state)
     print("Tipo initial state:", type(initial_state))

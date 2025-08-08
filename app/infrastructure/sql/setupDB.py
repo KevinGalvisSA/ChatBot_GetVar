@@ -1,5 +1,4 @@
 import os
-import datetime
 from time import sleep
 from typing import Callable, List, TypeVar
 from sqlalchemy import create_engine
@@ -8,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 
-from app.domain.model.customer import Customer
 from app.domain.model.messageStorage import MessageStorage
 
 load_dotenv()
@@ -27,7 +25,7 @@ except Exception as e:
 
 # 🔁 Función de reintento genérica
 T = TypeVar("T")
-def execute_try(func: Callable[[], T], max_retries: int = 3) -> T:
+def execute_try(func: Callable[[], T], max_retries: int = 1) -> T:
     retries = 0
     last_error = None
     while retries < max_retries:
@@ -63,9 +61,9 @@ class ChatMessageHistory:
                 )
                 messages = []
                 for row in reversed(rows):  # Reversar para orden cronológico
-                    if row.message_type == "human":
+                    if row.message_type == "human": # type: ignore
                         messages.append(HumanMessage(content=row.message))  # type: ignore
-                    elif row.message_type == "ai":
+                    elif row.message_type == "ai": # type: ignore
                         messages.append(AIMessage(content=row.message))  # type: ignore
                 return messages
             finally:
@@ -114,4 +112,3 @@ def get_formatted_history(session_id: str, limit: int = 15) -> str:
         rol = "🧑 Usuario" if isinstance(m, HumanMessage) else "🤖 Bot"
         result += f"{rol}: {m.content}\n"
     return result
- 

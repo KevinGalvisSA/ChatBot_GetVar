@@ -8,8 +8,8 @@ extractor = InfoExtractor()
 def extract_user_info_tool(state: State) -> dict:
     try:
         print("\n🧠 Nodo: extract_user_info_tool")
-        print("📥 Tipo de state:", type(state))
-        print("➡️ Entrada:", getattr(state, "input", None))
+        # print("📥 Tipo de state:", type(state))
+        # print("➡️ Entrada:", getattr(state, "input", None))
 
         input_text = state.input or ""
         extracted = extractor.extract(input_text)

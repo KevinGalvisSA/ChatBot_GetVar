@@ -9,7 +9,7 @@ def check_already_sent_tool(state: State) -> dict:
     """
     print("\n📌 [check_already_sent_tool] Ejecutando tool...")
     response_text = (state.response or "").lower().replace("ó", "o")
-    print(f"🔎 Texto analizado: {response_text}")
+    # print(f"🔎 Texto analizado: {response_text}")
 
     contiene_a = bool(re.search(r'\bsolucion a\b', response_text))
     contiene_b = bool(re.search(r'\bsolucion b\b', response_text))

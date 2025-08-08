@@ -1,9 +1,10 @@
 # app/infrastructure/sql/customer_saver.py
 
+from typing import Optional
 from app.domain.model.customer import Customer
 from app.infrastructure.sql.setupDB import SessionLocal
 
-def get_or_create_customer(name: str, phone: int) -> Customer:
+def get_or_create_customer(name: Optional[str], phone: int) -> Customer:
     print(f"🔍 Buscando o creando cliente ➜ name: {name}, phone: {phone}")
     session = SessionLocal()
     try:
@@ -12,7 +13,7 @@ def get_or_create_customer(name: str, phone: int) -> Customer:
             print(f"✅ Cliente encontrado: {customer}")
             return customer
 
-        new_customer = Customer(name=name or "Sin nombre", phone=phone)
+        new_customer = Customer(name=name or None, phone=phone)
         session.add(new_customer)
         session.commit()
         session.refresh(new_customer)

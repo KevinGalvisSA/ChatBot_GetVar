@@ -12,8 +12,8 @@ def call_gemini_tool(state: State) -> dict:
     prompt = state.prompt or "No prompt definido."
     chunks = state.context or []  # 👈 Asegúrate de pasar la lista de chunks
 
-    print(f"📨 Prompt enviado a Gemini:\n{prompt}\n")
-    print(f"📚 Chunks enviados: {len(chunks)}")
+    # print(f"📨 Prompt enviado a Gemini:\n{prompt}\n")
+    # print(f"📚 Chunks enviados: {len(chunks)}")
 
     try:
         result = answer_with_gemini(prompt, chunks)  # ✅ ahora sí pasan ambos

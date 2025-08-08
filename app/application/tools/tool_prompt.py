@@ -9,7 +9,7 @@ def build_prompt_tool(state: State) -> dict:
     """
     print("\n🧱 [build_prompt_tool] Generando prompt...")
 
-    print(f"🧩 Estado previo al prompt ➜ input: {state.input}, context: {state.context}")
+    # print(f"🧩 Estado previo al prompt ➜ input: {state.input}, context: {state.context}")
 
     try:
         prompt = build_prompt(state)

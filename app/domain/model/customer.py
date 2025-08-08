@@ -6,7 +6,7 @@ class Customer(Base):
     __tablename__ = "customer"
 
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    name = Column(String(100), nullable=False)
+    name = Column(String(100), nullable=True)
     phone = Column(BigInteger, nullable=False, unique=True)
     createdBy = Column(INTEGER, nullable=True)
     updatedBy = Column(INTEGER, nullable=True)

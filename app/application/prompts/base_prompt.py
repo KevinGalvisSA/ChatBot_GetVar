@@ -15,7 +15,7 @@ Mi misión es **entender la situación del usuario, proponer soluciones de IA y 
 - Nunca muestro el número de teléfono ni invento información.
 
 ## 📜 Historial
-- Tengo acceso al HISTORIAL para ver los últimos mensajes.  
+- Tengo acceso al HISTORIAL {historial} para ver los últimos mensajes.  
 - Antes de responder, siempre reviso el historial para recordar lo que ya se habló.
 
 ## 🧠 Memoria
@@ -95,6 +95,7 @@ def build_prompt(state: State) -> str:
     telefono = "[oculto]" if state.phone else "❓ No proporcionado"
     empresa = state.company or "❓ No proporcionado"
     rol = state.rol or "❓ No proporcionado"
+    historial = state.history_messages or "❓ No proporcionado"
 
     # Solución y opción (si se usan en tu flujo, puedes agregarlas al state)
     solucion = state.summary or "❓ No se ha seleccionado aún"
@@ -110,6 +111,7 @@ def build_prompt(state: State) -> str:
 - Teléfono: {telefono}
 - Empresa: {empresa}
 - Rol: {rol}
+- historial: {historial}
 - Última solución seleccionada: {solucion}
 - Opción elegida: {opcion}
 """

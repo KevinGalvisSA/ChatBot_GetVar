@@ -10,17 +10,17 @@ async def chat_with_bot(user_input: str, session_id: str, name: str, phone:str) 
     """
     Ejecuta el flujo de conversación del bot con el estado inicial.
     """
-    initial_state = State(input=user_input, session_id=session_id, name=name, phone=phone)
+    initial_state = State(input=user_input, session_id=session_id, name=name, phone=phone) # type: ignore
 
     print("🧾 Initial state:", initial_state)
     print("Tipo initial state:", type(initial_state))
 
-    final_state = await kai_graph.ainvoke(initial_state.model_dump())  # ✅ await + ainvoke
+    final_state = await kai_graph.ainvoke(initial_state.model_dump())  # type: ignore # ✅ await + ainvoke
 
     print("🧾 Final state:", final_state)
     print("🔍 Tipo:", type(final_state))
 
-    return final_state.get("response")
+    return final_state.get("response") # type: ignore
 
 def generate_chat_summary(session_id: str) -> str:
     """

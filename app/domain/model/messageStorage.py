@@ -1,5 +1,5 @@
 # app/domain/model/messageStorage.py
-from sqlalchemy import Column, Enum, String
+from sqlalchemy import Column, Enum, String, Text
 from sqlalchemy.dialects.mysql import INTEGER
 from app.domain.model.base import Base
 
@@ -9,8 +9,8 @@ class MessageStorage(Base):
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     id_customer = Column(INTEGER, nullable=False)
     session_id = Column(String(50), nullable=False, index=True)
-    message_type = Column(Enum('text', name='message_type_enum'), nullable=False)
-    message_type = Column(String(50), nullable=False)
+    message = Column(Text, nullable=False)  # Texto real del mensaje
+    message_type = Column(Enum('human', 'ai', name='message_type_enum'), nullable=False)  # Tipo de mensaje
 
     def __repr__(self):
         return (

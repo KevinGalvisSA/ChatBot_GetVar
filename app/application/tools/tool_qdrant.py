@@ -1,3 +1,5 @@
+# app/application/tools/tool_qdrant.py
+
 from app.domain.model.state import State
 from app.infrastructure.factories.qdrant import QdrantService
 from app.configuration import Config
@@ -6,7 +8,7 @@ from app.configuration import Config
 qdrant = QdrantService(
     url=Config.QDRANT_URL,
     collection_name=Config.QDRANT_COLLECTION_NAME,
-    api_key=Config.QDRANT_API_KEY
+    api_key=Config.QDRANT_API_KEY # type: ignore
 )
 
 def retrieve_context_tool(state: State) -> dict:

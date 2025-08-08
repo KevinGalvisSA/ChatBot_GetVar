@@ -1,5 +1,6 @@
 # app/domain/model/stateStorage.py
 from sqlalchemy import Column, Integer, String, Text, BigInteger, JSON, Boolean, TIMESTAMP, func
+
 from app.domain.model.base import Base
 
 class StateStorage(Base):
@@ -19,6 +20,7 @@ class StateStorage(Base):
     history_messages = Column(JSON, nullable=True)
     prompt = Column(Text, nullable=True)
     response = Column(Text, nullable=True)
+    was_greeted = Column(Boolean, nullable=True, default=False)
     summary = Column(Text, nullable=True)
     already_sent_solution = Column(Boolean, nullable=False, default=False)
     options_ab_sent = Column(Boolean, nullable=False, default=False)

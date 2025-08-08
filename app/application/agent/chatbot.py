@@ -2,6 +2,7 @@
 
 from app.domain.model.state import State
 from app.application.agent.langgraph_flow import build_kai_graph
+from app.infrastructure.sql.setupDB import get_formatted_history
 
 # Inicializamos el flujo de LangGraph (solo una vez)
 kai_graph = build_kai_graph()
@@ -26,6 +27,6 @@ def generate_chat_summary(session_id: str) -> str:
     """
     Genera un resumen de la conversación para la sesión dada.
     """
-    from app.infrastructure.sql.setupDB import get_formatted_history
+    
     resumen = get_formatted_history(session_id=session_id)
     return resumen or "⚠️ No se encontró historial para esta sesión."

@@ -104,7 +104,7 @@ class ChatMessageHistory:
         self.add_messages(AIMessage(content=content))
 
 # 📚 Extra: historial formateado como texto
-def get_formatted_history(session_id: str, limit: int = 15) -> str:
+def get_formatted_history(session_id: str, id_customer= 0, limit: int = 15) -> str:
     history = ChatMessageHistory(session_id=session_id, limit=limit)
     messages = history.get_messages()
     result = ""

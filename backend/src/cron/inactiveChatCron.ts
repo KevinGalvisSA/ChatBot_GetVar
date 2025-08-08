@@ -4,12 +4,12 @@ import { ChatService } from '../application/services/chat_service';
 const chatService = new ChatService();
 
 // Ejecutar cada hora, en el minuto 0
-cron.schedule('0 * * * *', async () => {
+cron.schedule('*/5 * * * *', async () => {
     console.log('⏰ Ejecutando cron job para detectar chats inactivos...');
 
     try {
         // Buscar chats inactivos hace más de 60 minutos
-        const inactiveChats = await chatService.getChatsInactiveForMinutes(60);
+        const inactiveChats = await chatService.getChatsInactiveForMinutes(5);
 
         if (inactiveChats.length === 0) {
             console.log('📭 No hay chats inactivos por cerrar.');

@@ -12,7 +12,7 @@ export class MessageService {
 
     async createMessage(data: Partial<Message>): Promise<Message> {
         if (![0, 1].includes(data.type ?? -1)) {
-            throw new Error('Invalid message type. Must be 0 (user) or 1 (bot).');
+            throw new Error('Invalid message type. Must be 0 (human) or 1 (ia).');
         }
 
         if (!data.content || data.content.trim() === '') {

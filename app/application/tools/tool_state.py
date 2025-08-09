@@ -1,9 +1,14 @@
 # app/application/tools/tool_state.py
 
 import datetime
+from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 from app.domain.model.state import State
 from app.infrastructure.sql.state_saver import StateSaver
+
+
+class StateInput(BaseModel):
+    state: dict = Field(description="Estado completo de la sesión como diccionario")
 
 
 def is_greeting(message: str) -> bool:
@@ -15,6 +20,7 @@ def is_greeting(message: str) -> bool:
     return any(message_lower.startswith(g) for g in greetings)
 
 
+@tool(args_schema=StateInput)
 def save_state_tool(state: dict) -> dict:
     """
     Guarda o actualiza el State en la base de datos.
@@ -27,70 +33,56 @@ def save_state_tool(state: dict) -> dict:
     existing_state = StateSaver.get_by_session(session_id)
 
     if existing_state:
-        # Verificamos si corresponde resetear
         if is_greeting(str(state.get("input"))):
             last_update = getattr(existing_state, "updated_at", None)
             if isinstance(last_update, datetime.datetime):
                 if datetime.datetime.utcnow() - last_update > datetime.timedelta(minutes=30):
-                    state["already_sent_solution"] = False
-                    state["options_ab_sent"] = False
-                    state["already_sent"] = False
-                    state["context"] = None
-                    state["prompt"] = None
-                    state["response"] = None
-                    state["summary"] = None
+                    state.update({
+                        "already_sent_solution": False,
+                        "options_ab_sent": False,
+                        "already_sent": False,
+                        "context": None,
+                        "prompt": None,
+                        "response": None,
+                        "summary": None
+                    })
 
         StateSaver.update_state(session_id, State(**state))
         return {"message": f"🔄 State actualizado para session_id={session_id}"}
-    else:
-        StateSaver.save_state(State(**state))
-        return {"message": f"✅ State creado para session_id={session_id}"}
+
+    StateSaver.save_state(State(**state))
+    return {"message": f"✅ State creado para session_id={session_id}"}
 
 
-
-def get_state_tool(session_id: int) -> dict:
+@tool(args_schema=StateInput)
+def get_state_tool(state: dict) -> dict:
     """
     Obtiene el State de la base de datos para un session_id.
     Si no existe, retorna un state vacío como dict.
     """
+    session_id = state.get("session_id")
     if session_id is None:
         raise ValueError("❌ No se puede obtener el state: session_id es None")
 
     existing_state = StateSaver.get_by_session(session_id)
-
     if existing_state:
-        # Convierte el modelo de la BD en dict (ignorando atributos internos como _sa_instance_state)
-        state_dict = {
+        return {
             k: v
             for k, v in existing_state.__dict__.items()
             if not k.startswith("_")
         }
-        return state_dict
 
-    # Si no existe, devolvemos uno inicial
-    empty_state = State(
-        session_id=session_id,
-        name=None,
-        phone=None,
-        company=None,
-        rol=None,
-        input=None,
-        context=None,
-        prompt=None,
-        response=None,
-        summary=None,
-        already_sent_solution=False,
-        options_ab_sent=False,
-        already_sent=False
-    )
-    return empty_state.__dict__
+    empty_state = State(session_id=session_id)
+    return empty_state.model_dump()
 
 
-def delete_state_tool(session_id: int) -> dict:
+@tool(args_schema=StateInput)
+def delete_state_tool(state: dict) -> dict:
     """
     Elimina el State de la base de datos para un session_id.
     Retorna un dict con confirmación.
     """
+    session_id = state.get("session_id")
     if session_id is None:
         raise ValueError("❌ No se puede eliminar el state: session_id es None")
 

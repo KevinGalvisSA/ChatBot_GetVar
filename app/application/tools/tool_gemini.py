@@ -1,27 +1,38 @@
-# app/application/tools/tool_gemini.py
-
-from app.domain.model.state import State
+from pydantic import BaseModel, Field
+from langchain_core.tools import tool
 from app.infrastructure.factories.gemini_integration import answer_with_gemini
+import logging
 
-def call_gemini_tool(state: State) -> dict:
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class CallGeminiInput(BaseModel):
+    state: dict = Field(description="Estado completo de la sesión como diccionario")
+
+@tool(args_schema=CallGeminiInput)
+def call_gemini_tool(state: dict) -> dict:
     """
-    Tool que envía el prompt a Gemini y guarda la respuesta.
+    Envía el prompt y el contexto a Gemini y devuelve la respuesta.
     """
-    print("\n🤖 [call_gemini_tool] Ejecutando tool...")
+    logger.info("\n🤖 [call_gemini_tool] Ejecutando tool...")
 
-    prompt = state.prompt or "No prompt definido."
-    chunks = state.context or []  # 👈 Asegúrate de pasar la lista de chunks
+    # Extraemos el prompt y contexto (chunks) del estado
+    prompt = state.get("prompt")
+    if not prompt:
+        logger.warning("⚠️ No se encontró 'prompt' en el estado.")
+        prompt = "No prompt definido."
 
-    # print(f"📨 Prompt enviado a Gemini:\n{prompt}\n")
-    # print(f"📚 Chunks enviados: {len(chunks)}")
+    chunks = state.get("context", [])
+    # Aseguramos que chunks sea lista, aunque sea vacía
+    if not isinstance(chunks, list):
+        logger.warning("⚠️ 'context' no es lista, se ignora.")
+        chunks = []
 
     try:
-        result = answer_with_gemini(prompt, chunks)  # ✅ ahora sí pasan ambos
-        print(f"✅ Respuesta recibida de Gemini:\n{result}\n")
+        result = answer_with_gemini(prompt, chunks)
+        logger.info(f"✅ Respuesta recibida de Gemini:\n{result}\n")
     except Exception as e:
         result = "⚠️ Ocurrió un error al consultar Gemini."
-        print(f"❌ Error al llamar a Gemini: {e}")
+        logger.error(f"❌ Error al llamar a Gemini: {e}")
 
-    return {
-        "response": result
-    }
+    return {"response": result}

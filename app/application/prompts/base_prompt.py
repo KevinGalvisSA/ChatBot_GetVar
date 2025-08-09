@@ -106,21 +106,18 @@ Acepto el nuevo cambio y actualizo la memoria con la nueva SOLUCIÓN u OPCIÓN.
 (Casos 1–5 igual que en el documento original)
 """
 
-
 def build_prompt(state: State) -> str:
-    """
-    Construye el prompt completo uniendo el instructivo, resumen del usuario y el historial.
-    """
-    # Datos básicos
     nombre = state.name or "❓ No proporcionado"
     telefono = "[oculto]" if state.phone else "❓ No proporcionado"
     empresa = state.company or "❓ No proporcionado"
     rol = state.rol or "❓ No proporcionado"
-    historial = state.history_messages or "❓ No proporcionado"
     saludo_estado = "✅ Ya fue saludado" if state.was_greeted else "❌ Aún no ha sido saludado"
 
+    # Convertir lista de ContextChunk a texto plano
+    historial_texto = "\n".join(chunk.text for chunk in (state.context or []))
+    if not historial_texto:
+        historial_texto = "Sin historial disponible."
 
-    # Solución y opción (si se usan en tu flujo, puedes agregarlas al state)
     solucion = state.summary or "❓ No se ha seleccionado aún"
     opcion = (
         "A) Venta del producto"
@@ -139,12 +136,10 @@ def build_prompt(state: State) -> str:
 - Empresa: {empresa}
 - Rol: {rol}
 - ¿Ya fue saludado?: {saludo_estado}
-- historial: {historial}
 - Última solución seleccionada: {solucion}
 - Opción elegida: {opcion}
 """
 
-
-    historial = f"\n🕑 **Historial de conversación:**\n{state.context or 'Sin historial disponible.'}"
+    historial = f"\n🕑 **Historial de conversación:**\n{historial_texto}"
 
     return f"{PROMPT_INSTRUCTIVO}\n\n{resumen_usuario.strip()}\n\n{historial}"

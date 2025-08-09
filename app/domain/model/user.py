@@ -8,7 +8,7 @@ class User(BaseModel):
     - phone: Teléfono del usuario
     """
     name: Optional[str] = None
-    phone: Optional[str] = None
+    phone: Optional[int] = None
 
     class Config:
         orm_mode = True  # Permite la conversión desde modelos ORM (como SQLAlchemy)

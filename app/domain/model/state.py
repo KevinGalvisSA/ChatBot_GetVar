@@ -13,7 +13,7 @@ class State(BaseModel):
     customer_id: Optional[int] = None
     session_id: Optional[int] = None
     name: Optional[str] = None
-    phone: Optional[str] = None  # Cambiado a str por formatos internacionales
+    phone: Optional[int] = None  # Cambiado a str por formatos internacionales
     company: Optional[str] = None
     rol: Optional[str] = None
 

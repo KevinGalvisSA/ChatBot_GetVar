@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configuración de la API de Gemini
 MY_GEMINI_API_KEY = Config.GEMINI_API_KEY
 if not MY_GEMINI_API_KEY:
     raise ValueError("❌ API key de Gemini no configurada en .env")
@@ -15,12 +14,24 @@ genai.configure(api_key=MY_GEMINI_API_KEY)  # type: ignore
 
 def answer_with_gemini(question: str, chunks: list[ContextChunk]) -> str:
     try:
-        context = "\n".join([chunk.text for chunk in chunks])
+        # Los chunks pueden ser dicts o ContextChunk, convertir a texto seguro
+        context_texts = []
+        for c in chunks:
+            # Si es dict con 'text' lo toma, si es ContextChunk también
+            if isinstance(c, dict):
+                context_texts.append(c.get("text", ""))
+            elif hasattr(c, "text"):
+                context_texts.append(c.text)
+            else:
+                context_texts.append(str(c))
+
+        context = "\n".join(context_texts).strip()
+
         prompt = f"""
 {BotRegulations.get_rule("intro")}
 
 ### CONTEXTO:
-{context}
+{context if context else 'No hay contexto disponible.'}
 
 ### PREGUNTA:
 {question}

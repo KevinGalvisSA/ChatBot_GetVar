@@ -13,7 +13,7 @@ load_dotenv()
 Kai_Agent_DB = os.getenv("DB_HOST")
 
 # 🛠️ Engine y sesión SQLAlchemy
-engine = create_engine(Kai_Agent_DB, pool_recycle=600, pool_pre_ping=True)  # type: ignore
+engine = create_engine(Kai_Agent_DB, pool_recycle=600, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # ✅ Probar conexión inicial

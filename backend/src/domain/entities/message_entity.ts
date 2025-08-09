@@ -19,7 +19,7 @@ export class Message {
     id!: number;
 
     @Column({ type: 'tinyint' })
-    type!: number; // 0 = user, 1 = bot
+    type!: number; // 0 = human, 1 = ia
 
     @Column({ type: 'text' })
     content!: string;

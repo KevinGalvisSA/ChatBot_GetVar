@@ -58,22 +58,30 @@ def save_state_tool(state: dict) -> dict:
 def get_state_tool(state: dict) -> dict:
     """
     Obtiene el State de la base de datos para un session_id.
-    Si no existe, retorna un state vacío como dict.
+    Actualiza el state recibido con los datos de la base (old_data),
+    solo para campos que en old_data no sean None y que falten o sean None en state.
     """
     session_id = state.get("session_id")
     if session_id is None:
         raise ValueError("❌ No se puede obtener el state: session_id es None")
 
-    existing_state = StateSaver.get_by_session(session_id)
-    if existing_state:
-        return {
+    old_data_obj = StateSaver.get_by_session(session_id)
+    if old_data_obj:
+        old_data = {
             k: v
-            for k, v in existing_state.__dict__.items()
+            for k, v in old_data_obj.__dict__.items()
             if not k.startswith("_")
         }
+    else:
+        old_data = State(session_id=session_id).model_dump()
 
-    empty_state = State(session_id=session_id)
-    return empty_state.model_dump()
+    # Actualizar el state recibido con los valores de old_data que no sean None
+    updated_state = state.copy()
+    for key, value in old_data.items():
+        if value is not None and (updated_state.get(key) is None):
+            updated_state[key] = value
+
+    return updated_state
 
 
 @tool(args_schema=StateInput)

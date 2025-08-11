@@ -32,7 +32,7 @@ def generate_chat_summary(session_id: str) -> str:
     resumen = get_formatted_history(session_id=session_id)
 
     summary = answer_with_gemini(
-        question=f"Genera un resumen detallado de la conversación, indicando los puntos clave como  cual fue la problematica y que decia esta, soluciones, acciones tomadas, conclusiones y puntos a mejorar:\n{resumen}",
+        question=f"Genera un resumen no tan detallado de la conversación,lo importante es que indique los puntos clave como cuál fue la problemática y qué decía esta, soluciones, acciones tomadas, conclusiones y puntos a mejorar. Que sea un resumen detallado pero no muy largo y que sea entendible:\n{resumen}",
         chunks=list[ContextChunk]
     )
 

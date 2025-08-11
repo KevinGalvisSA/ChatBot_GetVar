@@ -16,10 +16,12 @@ from app.application.tools.tool_update_name import update_name_tool
 from app.application.tools.tool_update_company import update_company_tool
 from app.application.tools.tool_update_role import update_role_tool
 from app.application.tools.tool_create_user import create_user_tool
+from app.application.tools.tool_extract_info import extract_user_info_tool
 
 TOOLS = {
     "save_message": save_message_tool,
     "get_history": get_history_tool,
+    "extract_user_info": extract_user_info_tool,
     "retrieve_context": retrieve_context_tool,
     "build_prompt": build_prompt_tool,
     "call_gemini": call_gemini_tool,
@@ -43,10 +45,10 @@ def merge_state_preserving_values(old: dict, new: dict) -> dict:
 # Wrapper general para tools que esperan {"state": {...}}
 def wrap_tool_dict_input(tool_func: Callable[[dict], dict], name: str) -> Callable[[State], State]:
     def wrapped(state: State) -> State:
-        print(f"\n🚀 Ejecutando nodo: {name}")
-        print(f"📥 Entrada State para {name}: {state}")
+        # print(f"\n🚀 Ejecutando nodo: {name}")
+        # print(f"📥 Entrada State para {name}: {state}")
         result_dict = tool_func({"state": state.model_dump()})
-        print(f"✅ Resultado nodo {name}: {result_dict}")
+        # print(f"✅ Resultado nodo {name}: {result_dict}")
         if not isinstance(result_dict, dict):
             raise TypeError(f"❌ Nodo {name} devolvió {type(result_dict)} en vez de dict")
         merged = merge_state_preserving_values(state.model_dump(), result_dict)
@@ -56,10 +58,10 @@ def wrap_tool_dict_input(tool_func: Callable[[dict], dict], name: str) -> Callab
 # Wrapper específico para create_user, también envuelve en "state"
 def wrap_create_user_tool(name: str = "create_user") -> Callable[[State], State]:
     def wrapped(state: State) -> State:
-        print(f"\n🚀 Ejecutando nodo: {name}")
-        print(f"📥 Entrada State para {name}: {state}")
+        # print(f"\n🚀 Ejecutando nodo: {name}")
+        # print(f"📥 Entrada State para {name}: {state}")
         result_dict = TOOLS[name]({"state": state.model_dump()})
-        print(f"✅ Resultado nodo {name}: {result_dict}")
+        # print(f"✅ Resultado nodo {name}: {result_dict}")
         if not isinstance(result_dict, dict):
             raise TypeError(f"❌ Nodo {name} devolvió {type(result_dict)} en vez de dict")
         merged = merge_state_preserving_values(state.model_dump(), result_dict)
@@ -69,10 +71,10 @@ def wrap_create_user_tool(name: str = "create_user") -> Callable[[State], State]
 # Wrapper especial para call_gemini_tool, que espera dict con "state"
 def wrap_call_gemini_tool(tool_func: Callable[[dict], dict], name: str = "call_gemini") -> Callable[[State], State]:
     def wrapped(state: State) -> State:
-        print(f"\n🚀 Ejecutando nodo: {name}")
-        print(f"📥 Entrada State para {name}: {state}")
+        # print(f"\n🚀 Ejecutando nodo: {name}")
+        # print(f"📥 Entrada State para {name}: {state}")
         result_dict = tool_func({"state": state.model_dump()})
-        print(f"✅ Resultado nodo {name}: {result_dict}")
+        # print(f"✅ Resultado nodo {name}: {result_dict}")
         if not isinstance(result_dict, dict):
             raise TypeError(f"❌ Nodo {name} devolvió {type(result_dict)} en vez de dict")
         merged = merge_state_preserving_values(state.model_dump(), result_dict)
@@ -81,8 +83,8 @@ def wrap_call_gemini_tool(tool_func: Callable[[dict], dict], name: str = "call_g
 
 def wrap_save_message_tool(name: str = "save_message") -> Callable[[State], State]:
     def wrapped(state: State) -> State:
-        print(f"\n🚀 Ejecutando nodo: {name}")
-        print(f"📥 Entrada State para {name}: {state}")
+        # print(f"\n🚀 Ejecutando nodo: {name}")
+        # print(f"📥 Entrada State para {name}: {state}")
 
         input_to_tool = {
             "state": state.model_dump(),
@@ -91,7 +93,7 @@ def wrap_save_message_tool(name: str = "save_message") -> Callable[[State], Stat
         }
 
         result_dict = TOOLS["save_message"](input_to_tool)
-        print(f"✅ Resultado nodo {name}: {result_dict}")
+        # print(f"✅ Resultado nodo {name}: {result_dict}")
 
         if not isinstance(result_dict, dict):
             raise TypeError(f"❌ Nodo {name} devolvió {type(result_dict)} en vez de dict")
@@ -102,8 +104,8 @@ def wrap_save_message_tool(name: str = "save_message") -> Callable[[State], Stat
 
 def wrap_save_bot_message_tool(name: str = "save_bot_message") -> Callable[[State], State]:
     def wrapped(state: State) -> State:
-        print(f"\n🚀 Ejecutando nodo: {name}")
-        print(f"📥 Entrada State para {name}: {state}")
+        # print(f"\n🚀 Ejecutando nodo: {name}")
+        # print(f"📥 Entrada State para {name}: {state}")
 
         input_to_tool = {
             "state": state.model_dump(),
@@ -112,7 +114,7 @@ def wrap_save_bot_message_tool(name: str = "save_bot_message") -> Callable[[Stat
         }
 
         result_dict = TOOLS["save_message"](input_to_tool)
-        print(f"✅ Resultado nodo {name}: {result_dict}")
+        # print(f"✅ Resultado nodo {name}: {result_dict}")
 
         if not isinstance(result_dict, dict):
             raise TypeError(f"❌ Nodo {name} devolvió {type(result_dict)} en vez de dict")
@@ -134,6 +136,7 @@ def build_kai_graph():
         "save_state",
         "get_history",
         "retrieve_context",
+        "extract_user_info",
         "build_prompt",
         "check_sent",
         "call_gemini",
@@ -162,8 +165,18 @@ def build_kai_graph():
 
     graph.set_entry_point("get_state")
 
-    graph.add_edge("get_state", "create_user")
-    graph.add_edge("create_user", "save_message")
+    # Paso 1: obtener el estado
+    graph.add_edge("get_state", "extract_user_info")
+
+    # Paso 2: extraer datos del mensaje y pasarlos al state
+    graph.add_edge("extract_user_info", "create_user")
+
+    graph.add_edge("create_user", "update_name")
+    graph.add_edge("update_name", "update_company")
+    graph.add_edge("update_company", "update_role")
+    graph.add_edge("update_role", "save_message")
+
+    # Resto del flujo normal
     graph.add_edge("save_message", "get_history")
     graph.add_edge("get_history", "retrieve_context")
     graph.add_edge("retrieve_context", "build_prompt")
@@ -174,10 +187,7 @@ def build_kai_graph():
 
     graph.add_conditional_edges("check_sent", after_check_sent)
 
-    graph.add_edge("call_gemini", "update_name")
-    graph.add_edge("update_name", "update_company")
-    graph.add_edge("update_company", "update_role")
-    graph.add_edge("update_role", "save_bot_message")
+    graph.add_edge("call_gemini", "save_bot_message")
 
     graph.add_edge("save_bot_message", "check_AB")
     graph.add_edge("check_AB", "save_state")
